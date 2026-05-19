@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "49214440490",
+    "project_id": "decision-room-4ak2",
+    "storage_bucket": "decision-room-4ak2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:49214440490:android:db81e6d10a9b1158bf6f53",
+        "android_client_info": {
+          "package_name": "id.ac.pnm.decisionroom"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDopXto1K0stOTZ81oVrXpDAsboZ6Y2LhY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
