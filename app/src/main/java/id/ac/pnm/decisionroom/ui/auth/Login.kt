@@ -1,4 +1,4 @@
-package id.ac.pnm.decisionroom
+package id.ac.pnm.decisionroom.ui.auth
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -16,6 +16,11 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import id.ac.pnm.decisionroom.BackgroundLight
+import id.ac.pnm.decisionroom.PrimaryNavy
+import id.ac.pnm.decisionroom.TextFieldBackground
+import id.ac.pnm.decisionroom.TextGray
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
@@ -146,27 +151,6 @@ fun LoginScreen(
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
-
-                // Divider ATAU LANJUTKAN DENGAN
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                    Divider(modifier = Modifier.weight(1f), color = Color.LightGray)
-                    Text(" ATAU LANJUTKAN DENGAN ", fontSize = 10.sp, color = TextGray)
-                    Divider(modifier = Modifier.weight(1f), color = Color.LightGray)
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // Tombol Google (Membutuhkan asset logo google di res/drawable)
-                OutlinedButton(
-                    onClick = { /* Handle Google Login */ },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    // Gunakan painterResource(id = R.drawable.ic_google) jika ada logonya
-                    Text("Masuk dengan Google", color = Color.Black)
-                }
             }
         }
 

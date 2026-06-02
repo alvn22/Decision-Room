@@ -1,4 +1,4 @@
-package id.ac.pnm.decisionroom // Sesuaikan package Anda
+package id.ac.pnm.decisionroom.ui.profile // Sesuaikan package Anda
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -17,20 +17,28 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 // --- Tambahkan Import Firebase & Model ---
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
-import id.ac.pnm.decisionroom.model.UserProfile
+import com.google.firebase.auth.auth
+import com.google.firebase.firestore.firestore
+import com.google.firebase.Firebase
+import id.ac.pnm.decisionroom.BackgroundLight
+import id.ac.pnm.decisionroom.PrimaryNavy
+import id.ac.pnm.decisionroom.TextGray
+import id.ac.pnm.decisionroom.components.BottomNavBar
+import id.ac.pnm.decisionroom.components.BottomNavItem
+import id.ac.pnm.decisionroom.model.auth.UserProfile
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     onLogoutClick: () -> Unit,
-    onNavigateToEdit: () -> Unit
+    onNavigateToEdit: () -> Unit,
+
+    onNavigateHome: () -> Unit,
+    onNavigateRoom: () -> Unit,
+    onNavigateHistory: () -> Unit
 ) {
     // 1. Inisialisasi awal variabel state dengan nilai kosong/default
     var fullName by remember { mutableStateOf("") }
@@ -108,36 +116,17 @@ fun ProfileScreen(
                 }
             },
             bottomBar = {
-                NavigationBar(containerColor = Color.White, tonalElevation = 8.dp) {
-                    NavigationBarItem(
-                        icon = { Icon(Icons.Outlined.Home, contentDescription = "Home") },
-                        label = { Text("HOME", fontSize = 10.sp) },
-                        selected = false,
-                        onClick = {}
-                    )
-                    NavigationBarItem(
-                        icon = { Icon(Icons.Outlined.MeetingRoom, contentDescription = "Room") },
-                        label = { Text("ROOM", fontSize = 10.sp) },
-                        selected = false,
-                        onClick = {}
-                    )
-                    NavigationBarItem(
-                        icon = { Icon(Icons.Outlined.History, contentDescription = "History") },
-                        label = { Text("HISTORY", fontSize = 10.sp) },
-                        selected = false,
-                        onClick = {}
-                    )
-                    NavigationBarItem(
-                        icon = { Icon(Icons.Filled.Person, contentDescription = "Profile") },
-                        label = { Text("PROFILE", fontSize = 10.sp) },
-                        selected = true,
-                        onClick = {},
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = PrimaryNavy,
-                            indicatorColor = LightBlueAccent.copy(alpha = 0.5f)
-                        )
-                    )
-                }
+                BottomNavBar(
+                    selected = BottomNavItem.PROFILE,
+
+                    onHomeClick = onNavigateHome,
+
+                    onRoomClick = onNavigateRoom,
+
+                    onHistoryClick = onNavigateHistory,
+
+                    onProfileClick = {}
+                )
             }
         ) { innerPadding ->
             Column(
@@ -192,7 +181,9 @@ fun ProfileScreen(
                         Spacer(modifier = Modifier.height(16.dp))
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Box(modifier = Modifier.width(2.dp).height(30.dp).background(PrimaryNavy))
+                                Box(modifier = Modifier.width(2.dp).height(30.dp).background(
+                                    PrimaryNavy
+                                ))
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Column {
                                     // --- DATA DINAMIS ---
