@@ -45,28 +45,10 @@ fun RegisterScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(BackgroundLight)
-            .verticalScroll(rememberScrollState())
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-        // --- Header / Top Bar ---
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color.White)
-                .padding(horizontal = 16.dp, vertical = 16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Icon(Icons.Default.Menu, contentDescription = "Menu", tint = PrimaryNavy)
-            Text(
-                text = "Decision Room",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = PrimaryNavy
-            )
-            Icon(Icons.Default.AccountCircle, contentDescription = "Profile", tint = PrimaryNavy)
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
 
         // --- Card Form Register ---
         Card(
