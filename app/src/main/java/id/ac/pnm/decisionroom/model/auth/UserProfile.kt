@@ -1,4 +1,4 @@
-package id.ac.pnm.decisionroom.model // Sesuaikan dengan package Anda
+package id.ac.pnm.decisionroom.model.auth
 
 data class UserProfile(
     val uid: String = "",

@@ -1,11 +1,10 @@
-package id.ac.pnm.decisionroom // Pastikan nama package ini sama dengan file Anda yang lain
+package id.ac.pnm.decisionroom.ui.profile // Pastikan nama package ini sama dengan file Anda yang lain
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Autorenew
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -19,6 +18,10 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import id.ac.pnm.decisionroom.BackgroundLight
+import id.ac.pnm.decisionroom.PrimaryNavy
+import id.ac.pnm.decisionroom.TextFieldBackground
+import id.ac.pnm.decisionroom.TextGray
 
 
 @OptIn(ExperimentalMaterial3Api::class)

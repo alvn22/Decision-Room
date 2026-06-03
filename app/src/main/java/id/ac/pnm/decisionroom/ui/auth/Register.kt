@@ -1,4 +1,4 @@
-package id.ac.pnm.decisionroom
+package id.ac.pnm.decisionroom.ui.auth
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -21,6 +21,10 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import id.ac.pnm.decisionroom.BackgroundLight
+import id.ac.pnm.decisionroom.PrimaryNavy
+import id.ac.pnm.decisionroom.TextFieldBackground
+import id.ac.pnm.decisionroom.TextGray
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,28 +45,10 @@ fun RegisterScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(BackgroundLight)
-            .verticalScroll(rememberScrollState())
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-        // --- Header / Top Bar ---
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color.White)
-                .padding(horizontal = 16.dp, vertical = 16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Icon(Icons.Default.Menu, contentDescription = "Menu", tint = PrimaryNavy)
-            Text(
-                text = "Decision Room",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = PrimaryNavy
-            )
-            Icon(Icons.Default.AccountCircle, contentDescription = "Profile", tint = PrimaryNavy)
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
 
         // --- Card Form Register ---
         Card(
