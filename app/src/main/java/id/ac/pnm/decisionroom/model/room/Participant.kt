@@ -1,0 +1,7 @@
+package id.ac.pnm.decisionroom.model.room
+
+data class Participant(
+    val name: String = "",
+    val isHost: Boolean = false,
+    val ready: Boolean = false
+)
