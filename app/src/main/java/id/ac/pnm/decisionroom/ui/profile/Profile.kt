@@ -38,7 +38,8 @@ fun ProfileScreen(
 
     onNavigateHome: () -> Unit,
     onNavigateRoom: () -> Unit,
-    onNavigateHistory: () -> Unit
+    onNavigateHistory: () -> Unit,
+    onNavigateProfile: () -> Unit
 ) {
     // 1. Inisialisasi awal variabel state dengan nilai kosong/default
     var fullName by remember { mutableStateOf("") }
@@ -125,7 +126,7 @@ fun ProfileScreen(
 
                     onHistoryClick = onNavigateHistory,
 
-                    onProfileClick = {}
+                    onProfileClick = onNavigateProfile
                 )
             }
         ) { innerPadding ->

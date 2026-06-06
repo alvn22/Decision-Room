@@ -20,10 +20,14 @@ import id.ac.pnm.decisionroom.ui.auth.LoginScreen
 import id.ac.pnm.decisionroom.ui.auth.RegisterScreen
 import id.ac.pnm.decisionroom.ui.profile.EditProfileScreen
 import id.ac.pnm.decisionroom.ui.profile.ProfileScreen
+import id.ac.pnm.decisionroom.ui.room.create.CreateRoomScreen
+import id.ac.pnm.decisionroom.ui.room.join.JoinRoomScreen
+import id.ac.pnm.decisionroom.ui.room.waiting.WaitingRoomScreen
+import id.ac.pnm.decisionroom.ui.room.waiting.WaitingRoomViewModel
 
 // Enum untuk rute halaman
 enum class Screen {
-    LOGIN, REGISTER, DASHBOARD, ROOM, HISTORY, PROFILE, EDIT_PROFILE
+    LOGIN, REGISTER, DASHBOARD, ROOM, CREATE_ROOM, WAITING_ROOM, HISTORY, PROFILE, EDIT_PROFILE
 }
 
 class MainActivity : ComponentActivity() {
@@ -43,10 +47,18 @@ class MainActivity : ComponentActivity() {
                 ) {
                     val context = LocalContext.current
 
+                    var selectedRoomId by remember {
+                        mutableStateOf("")
+                    }
+
+                    var username by remember {
+                        mutableStateOf("Guest")
+                    }
+
                     // Cek status login
                     var currentScreen by remember {
                         mutableStateOf(
-                            if (auth.currentUser != null) Screen.PROFILE else Screen.LOGIN
+                            if (auth.currentUser != null) Screen.ROOM else Screen.LOGIN
                         )
                     }
 
@@ -143,7 +155,58 @@ class MainActivity : ComponentActivity() {
                         }
 
                         Screen.ROOM -> {
-                            Text("Room")
+                            JoinRoomScreen(
+
+                                username = username,
+
+                                onCreateRoom = {
+
+                                    currentScreen =
+                                        Screen.CREATE_ROOM
+                                },
+
+                                onJoinSuccess = {
+
+                                    selectedRoomId = it
+
+                                    currentScreen  =
+                                        Screen.WAITING_ROOM
+                                },
+
+                                onNavigateHome = {
+                                    currentScreen = Screen.DASHBOARD
+                                },
+                                onNavigateRoom = {
+                                    currentScreen = Screen.ROOM
+                                },
+                                onNavigateHistory = {
+                                    currentScreen = Screen.HISTORY
+                                },
+                                onNavigateProfile = {
+                                    currentScreen = Screen.PROFILE
+                                }
+                            )
+                        }
+
+                        Screen.WAITING_ROOM -> {
+                            WaitingRoomScreen(
+                                roomId = selectedRoomId
+                            )
+                        }
+
+                        Screen.CREATE_ROOM -> {
+                            CreateRoomScreen(
+
+                                username = username,
+
+                                onRoomCreated = {
+
+                                    selectedRoomId = it
+
+                                    currentScreen =
+                                        Screen.WAITING_ROOM
+                                }
+                            )
                         }
 
                         Screen.HISTORY -> {
@@ -172,6 +235,9 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onNavigateHistory = {
                                     currentScreen = Screen.HISTORY
+                                },
+                                onNavigateProfile = {
+                                    currentScreen = Screen.PROFILE
                                 }
                             )
                         }
