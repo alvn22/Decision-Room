@@ -22,12 +22,13 @@ import id.ac.pnm.decisionroom.ui.profile.EditProfileScreen
 import id.ac.pnm.decisionroom.ui.profile.ProfileScreen
 import id.ac.pnm.decisionroom.ui.room.create.CreateRoomScreen
 import id.ac.pnm.decisionroom.ui.room.join.JoinRoomScreen
+import id.ac.pnm.decisionroom.ui.room.result.ResultScreen
+import id.ac.pnm.decisionroom.ui.room.voting.VotingRoomScreen
 import id.ac.pnm.decisionroom.ui.room.waiting.WaitingRoomScreen
-import id.ac.pnm.decisionroom.ui.room.waiting.WaitingRoomViewModel
 
 // Enum untuk rute halaman
 enum class Screen {
-    LOGIN, REGISTER, DASHBOARD, ROOM, CREATE_ROOM, WAITING_ROOM, HISTORY, PROFILE, EDIT_PROFILE
+    LOGIN, REGISTER, DASHBOARD, ROOM, CREATE_ROOM, WAITING_ROOM, VOTING_ROOM, RESULT_ROOM, HISTORY, PROFILE, EDIT_PROFILE
 }
 
 class MainActivity : ComponentActivity() {
@@ -190,7 +191,10 @@ class MainActivity : ComponentActivity() {
 
                         Screen.WAITING_ROOM -> {
                             WaitingRoomScreen(
-                                roomId = selectedRoomId
+                                roomId = selectedRoomId,
+                                navigateToVoting = {
+                                    currentScreen = Screen.VOTING_ROOM
+                                }
                             )
                         }
 
@@ -206,6 +210,22 @@ class MainActivity : ComponentActivity() {
                                     currentScreen =
                                         Screen.WAITING_ROOM
                                 }
+                            )
+                        }
+
+                        Screen.VOTING_ROOM -> {
+                            VotingRoomScreen(
+                                roomId = selectedRoomId,
+                                navigateToResult = {
+                                    currentScreen =
+                                        Screen.RESULT_ROOM
+                                }
+                            )
+                        }
+
+                        Screen.RESULT_ROOM -> {
+                            ResultScreen(
+                                roomId = selectedRoomId
                             )
                         }
 

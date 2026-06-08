@@ -1,11 +1,12 @@
 package id.ac.pnm.decisionroom.model.room
 
 data class Room(
-    val roomId: String = "",
-    val title: String = "",
-    val hostId: String = "",
-    val status: String = "waiting",
-    val anonymousVoting: Boolean = false,
-    val participants: Map<String, Participant> = emptyMap(),
-    val options: Map<String, VoteOption> = emptyMap()
+    var roomId: String = "",
+    var title: String = "",
+    var hostId: String = "",
+    var status: String = "waiting",
+    var anonymousVoting: Boolean = false,
+    var participants: Map<String, Participant> = emptyMap(),
+    var options: List<VoteOption> = emptyList(),
+    var votes: Map<String, Int> = emptyMap()
 )
