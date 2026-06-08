@@ -13,6 +13,10 @@ class WaitingRoomViewModel : ViewModel() {
 
     var room by mutableStateOf<Room?>(null)
 
+    fun startVoting(roomId: String) {
+        repository.startVoting(roomId)
+    }
+
     fun observeRoom(
         roomId: String
     ) {

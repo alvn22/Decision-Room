@@ -66,4 +66,50 @@ class RoomRepository {
                 }
             )
     }
+
+    fun submitVote(
+        roomId: String,
+        uid: String,
+        optionIndex: Int,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+
+        db.child("rooms")
+            .child(roomId)
+            .child("votes")
+            .child(uid)
+            .setValue(optionIndex)
+
+            .addOnSuccessListener {
+
+                onSuccess()
+            }
+
+            .addOnFailureListener {
+
+                onError(
+                    it.message ?: "Vote gagal"
+                )
+            }
+    }
+
+    fun endVoting(
+        roomId: String
+    ) {
+
+        db.child("rooms")
+            .child(roomId)
+            .child("status")
+            .setValue("finished")
+    }
+
+    fun startVoting(
+        roomId: String
+    ){
+        db.child("rooms")
+            .child(roomId)
+            .child("status")
+            .setValue("voting")
+    }
 }

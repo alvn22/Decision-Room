@@ -11,7 +11,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun WaitingRoomScreen(
-    roomId: String
+    roomId: String,
+    navigateToVoting: () -> Unit
 ) {
 
     val viewModel:
@@ -26,6 +27,12 @@ fun WaitingRoomScreen(
     }
 
     val room = viewModel.room
+
+    LaunchedEffect(room?.status) {
+        if (room?.status == "voting") {
+            navigateToVoting()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -111,7 +118,7 @@ fun WaitingRoomScreen(
                 Modifier.fillMaxWidth(),
 
             onClick = {
-
+                viewModel.startVoting(roomId)
             }
         ) {
             Text("START VOTING")
