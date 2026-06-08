@@ -64,11 +64,9 @@ class CreateRoomViewModel : ViewModel() {
                     mapOf(uid to participant),
 
                 options =
-                    options.mapIndexed { index, text ->
-
-                        index.toString() to
-                                VoteOption(text)
-                    }.toMap()
+                    options.map {
+                        VoteOption(text = it, voteCount = 0)
+                    }
             )
 
         repository.createRoom(
