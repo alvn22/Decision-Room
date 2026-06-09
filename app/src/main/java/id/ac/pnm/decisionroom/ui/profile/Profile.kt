@@ -255,27 +255,6 @@ fun ProfileScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Notifications Toggle Card
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White)
-                ) {
-                    Row(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Outlined.Notifications, contentDescription = null, tint = PrimaryNavy)
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Column {
-                                Text("Email Notifications", fontSize = 14.sp, color = Color.Black)
-                                Text("Receive live room results", fontSize = 10.sp, color = TextGray)
-                            }
-                        }
-                        Switch(checked = emailNotifications, onCheckedChange = { emailNotifications = it }, colors = SwitchDefaults.colors(checkedTrackColor = LightBlueAccent))
-                    }
-                }
-
                 Spacer(modifier = Modifier.height(24.dp))
 
                 Spacer(modifier = Modifier.height(12.dp))

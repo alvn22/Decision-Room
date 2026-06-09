@@ -11,6 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
@@ -27,6 +28,8 @@ import id.ac.pnm.decisionroom.ui.room.join.JoinRoomScreen
 import id.ac.pnm.decisionroom.ui.room.result.ResultScreen
 import id.ac.pnm.decisionroom.ui.room.voting.VotingRoomScreen
 import id.ac.pnm.decisionroom.ui.room.waiting.WaitingRoomScreen
+import id.ac.pnm.decisionroom.viewmodel.AuthViewModel
+import id.ac.pnm.decisionroom.viewmodel.ProfileViewModel
 
 // Enum untuk rute halaman
 enum class Screen {
@@ -49,6 +52,8 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     val context = LocalContext.current
+                    val authViewModel: AuthViewModel = viewModel()
+                    val profileViewModel: ProfileViewModel = viewModel()
 
                     var selectedRoomId by remember {
                         mutableStateOf("")
@@ -58,10 +63,9 @@ class MainActivity : ComponentActivity() {
                         mutableStateOf("Guest")
                     }
 
-                    // Cek status login
                     var currentScreen by remember {
                         mutableStateOf(
-                            if (auth.currentUser != null) Screen.DASHBOARD else Screen.LOGIN
+                            if (authViewModel.isUserLoggedIn()) Screen.DASHBOARD else Screen.LOGIN
                         )
                     }
 
@@ -71,85 +75,39 @@ class MainActivity : ComponentActivity() {
                         Screen.LOGIN -> {
                             LoginScreen(
                                 onLoginClick = { email, password ->
-                                    if (email.isNotEmpty() && password.isNotEmpty()) {
-                                        auth.signInWithEmailAndPassword(email, password)
-                                            .addOnCompleteListener(this) { task ->
-                                                if (task.isSuccessful) {
-                                                    Toast.makeText(
-                                                        context,
-                                                        "Login Berhasil!",
-                                                        Toast.LENGTH_SHORT
-                                                    ).show()
-                                                    currentScreen = Screen.DASHBOARD
-                                                } else {
-                                                    Toast.makeText(
-                                                        context,
-                                                        "Gagal: ${task.exception?.message}",
-                                                        Toast.LENGTH_LONG
-                                                    ).show()
-                                                }
-                                            }
-                                    } else {
-                                        Toast.makeText(
-                                            context,
-                                            "Email dan Password wajib diisi",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
+                                    authViewModel.login(
+                                        email = email,
+                                        password = password,
+                                        onSuccess = {
+                                            Toast.makeText(context, "Login Berhasil!", Toast.LENGTH_SHORT).show()
+                                            currentScreen = Screen.DASHBOARD
+                                        },
+                                        onError = { errorMessage ->
+                                            Toast.makeText(context, "Gagal: $errorMessage", Toast.LENGTH_LONG).show()
+                                        }
+                                    )
                                 },
-                                onNavigateToRegister = {
-                                    currentScreen = Screen.REGISTER
-                                }
+                                onNavigateToRegister = { currentScreen = Screen.REGISTER }
                             )
                         }
 
                         Screen.REGISTER -> {
                             RegisterScreen(
                                 onRegisterClick = { namaLengkap, email, password ->
-                                    if (email.isNotEmpty() && password.isNotEmpty() && namaLengkap.isNotEmpty()) {
-                                        auth.createUserWithEmailAndPassword(email, password)
-                                            .addOnCompleteListener(this) { task ->
-                                                if (task.isSuccessful) {
-                                                    val uid = auth.currentUser?.uid ?: ""
-                                                    val newUserProfile = UserProfile(
-                                                        uid = uid,
-                                                        fullName = namaLengkap,
-                                                        email = email,
-                                                        role = "Member",
-                                                        votesCast = 0,
-                                                        roomsHosted = 0,
-                                                        emailNotifications = true
-                                                    )
-
-                                                    val db = Firebase.firestore
-                                                    db.collection("users").document(uid)
-                                                        .set(newUserProfile)
-
-                                                    Toast.makeText(
-                                                        context,
-                                                        "Registrasi Berhasil! Selamat Datang.",
-                                                        Toast.LENGTH_SHORT
-                                                    ).show()
-                                                    currentScreen = Screen.DASHBOARD
-                                                } else {
-                                                    Toast.makeText(
-                                                        context,
-                                                        "Gagal mendaftar: ${task.exception?.message}",
-                                                        Toast.LENGTH_LONG
-                                                    ).show()
-                                                }
-                                            }
-                                    } else {
-                                        Toast.makeText(
-                                            context,
-                                            "Semua data wajib diisi",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
+                                    authViewModel.register(
+                                        namaLengkap = namaLengkap,
+                                        email = email,
+                                        password = password,
+                                        onSuccess = {
+                                            Toast.makeText(context, "Registrasi Berhasil! Selamat Datang.", Toast.LENGTH_SHORT).show()
+                                            currentScreen = Screen.DASHBOARD
+                                        },
+                                        onError = { errorMessage ->
+                                            Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+                                        }
+                                    )
                                 },
-                                onNavigateToLogin = {
-                                    currentScreen = Screen.LOGIN
-                                }
+                                onNavigateToLogin = { currentScreen = Screen.LOGIN }
                             )
                         }
 
@@ -268,145 +226,43 @@ class MainActivity : ComponentActivity() {
                         Screen.PROFILE -> {
                             ProfileScreen(
                                 onLogoutClick = {
-                                    auth.signOut()
-                                    Toast.makeText(
-                                        context,
-                                        "Berhasil Keluar Akun",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                    currentScreen = Screen.LOGIN
+                                    authViewModel.logout(
+                                        onSuccess = {
+                                            Toast.makeText(context, "Berhasil Keluar Akun", Toast.LENGTH_SHORT).show()
+                                            currentScreen = Screen.LOGIN
+                                        }
+                                    )
                                 },
-                                onNavigateToEdit = {
-                                    currentScreen = Screen.EDIT_PROFILE
-                                },
-                                onNavigateHome = {
-                                    currentScreen = Screen.DASHBOARD
-                                },
-                                onNavigateRoom = {
-                                    currentScreen = Screen.ROOM
-                                },
-                                onNavigateHistory = {
-                                    currentScreen = Screen.HISTORY
-                                },
-                                onNavigateProfile = {
-                                    currentScreen = Screen.PROFILE
-                                }
+                                onNavigateToEdit = { currentScreen = Screen.EDIT_PROFILE },
+                                onNavigateHome = { currentScreen = Screen.DASHBOARD },
+                                onNavigateRoom = { currentScreen = Screen.ROOM },
+                                onNavigateHistory = { currentScreen = Screen.HISTORY },
+                                onNavigateProfile = { currentScreen = Screen.PROFILE }
                             )
                         }
 
                         Screen.EDIT_PROFILE -> {
-                            // Tangkap context level aplikasi agar Toast "kebal" dari perpindahan layar
                             val appContext = context.applicationContext
 
                             EditProfileScreen(
-                                onBackClick = {
-                                    currentScreen = Screen.PROFILE
-                                },
-                                // Menerima 3 parameter sesuai penyesuaian Anda
+                                onBackClick = { currentScreen = Screen.PROFILE },
+                                // Menggunakan profileViewModel di halaman Edit Profile
                                 onSaveClick = { newName, newEmail, newPassword ->
-                                    val uid = auth.currentUser?.uid
-                                    val user = auth.currentUser
-
-                                    if (uid != null) {
-                                        val db = Firebase.firestore
-                                        var anyChanges = false
-
-                                        // 1. UPDATE NAMA DI FIRESTORE
-                                        if (newName.isNotEmpty()) {
-                                            anyChanges = true
-                                            db.collection("users").document(uid)
-                                                .update("fullName", newName)
-                                                .addOnSuccessListener {
-                                                    // Gunakan appContext di sini
-                                                    Toast.makeText(
-                                                        appContext,
-                                                        "Nama berhasil diperbarui!",
-                                                        Toast.LENGTH_SHORT
-                                                    ).show()
-                                                    currentScreen = Screen.PROFILE
-                                                }
-                                                .addOnFailureListener { e ->
-                                                    Toast.makeText(
-                                                        appContext,
-                                                        "Gagal memperbarui nama: ${e.message}",
-                                                        Toast.LENGTH_SHORT
-                                                    ).show()
-                                                }
+                                    profileViewModel.updateProfile(
+                                        newName = newName,
+                                        newEmail = newEmail,
+                                        newPassword = newPassword,
+                                        onSuccess = { successMessage ->
+                                            Toast.makeText(appContext, successMessage, Toast.LENGTH_SHORT).show()
+                                            currentScreen = Screen.PROFILE
+                                        },
+                                        onError = { errorMessage ->
+                                            Toast.makeText(appContext, errorMessage, Toast.LENGTH_LONG).show()
+                                        },
+                                        onNoChanges = {
+                                            Toast.makeText(appContext, "Tidak ada data perubahan yang diisi", Toast.LENGTH_SHORT).show()
                                         }
-
-                                        // 2. UPDATE EMAIL DI FIREBASE AUTH & FIRESTORE
-                                        if (newEmail.isNotEmpty()) {
-                                            anyChanges = true
-                                            user?.updateEmail(newEmail)
-                                                ?.addOnCompleteListener { task ->
-                                                    if (task.isSuccessful) {
-                                                        db.collection("users").document(uid)
-                                                            .update("email", newEmail)
-                                                            .addOnSuccessListener {
-                                                                Toast.makeText(
-                                                                    appContext,
-                                                                    "Email berhasil diperbarui!",
-                                                                    Toast.LENGTH_SHORT
-                                                                ).show()
-                                                                currentScreen = Screen.PROFILE
-                                                            }
-                                                            .addOnFailureListener { e ->
-                                                                Toast.makeText(
-                                                                    appContext,
-                                                                    "Auth email ganti, tapi gagal update database: ${e.message}",
-                                                                    Toast.LENGTH_SHORT
-                                                                ).show()
-                                                            }
-                                                    } else {
-                                                        Toast.makeText(
-                                                            appContext,
-                                                            "Gagal ganti email: ${task.exception?.message}",
-                                                            Toast.LENGTH_LONG
-                                                        ).show()
-                                                    }
-                                                }
-                                        }
-
-                                        // 3. UPDATE PASSWORD
-                                        if (newPassword.isNotEmpty()) {
-                                            anyChanges = true
-                                            user?.updatePassword(newPassword)
-                                                ?.addOnSuccessListener {
-                                                    Toast.makeText(
-                                                        appContext,
-                                                        "Password berhasil diperbarui!",
-                                                        Toast.LENGTH_SHORT
-                                                    ).show()
-                                                    currentScreen = Screen.PROFILE
-                                                }
-                                                ?.addOnFailureListener { e ->
-                                                    Toast.makeText(
-                                                        appContext,
-                                                        "Gagal ganti password: ${e.message}",
-                                                        Toast.LENGTH_LONG
-                                                    ).show()
-                                                }
-                                        }
-
-                                        // Jika tombol ditekan tapi semua form kosong
-                                        if (!anyChanges) {
-                                            Toast.makeText(
-                                                appContext,
-                                                "Tidak ada data perubahan yang diisi",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-                                        } else {
-                                            // Jika ada data yang diisi, kita biarkan layar pindah setelah proses di dalam onSuccessListener selesai
-                                            // (Catatan: Jika user mengisi Nama DAN Email, maka akan muncul 2 Toast berurutan. Ini normal dan bagus untuk feedback).
-                                        }
-
-                                    } else {
-                                        Toast.makeText(
-                                            appContext,
-                                            "Sesi salah, silakan login kembali",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
+                                    )
                                 }
                             )
                         }
