@@ -18,9 +18,7 @@ fun VotingRoomScreen(
     roomId: String,
     navigateToResult: () -> Unit
 ) {
-    val context =
-        LocalContext.current
-
+    val context = LocalContext.current
     val viewModel:
             VotingRoomViewModel =
         viewModel()
@@ -117,27 +115,20 @@ fun VotingRoomScreen(
                                     room.votes[uid] == index,
 
                                 onClick = {
-                                    if (!alreadyVote) {
-                                        viewModel.vote(
-                                            roomId,
-                                            index,
-                                            onSuccess = {
-                                                Toast.makeText(
-                                                    context,
-                                                    "Vote berhasil",
-                                                    Toast.LENGTH_SHORT
-                                                ).show()
-                                            },
+                                    viewModel.vote(
+                                        roomId,
+                                        index,
+                                        onSuccess = {
 
-                                            onError = {
-                                                Toast.makeText(
-                                                    context,
-                                                    it,
-                                                    Toast.LENGTH_SHORT
-                                                ).show()
-                                            }
-                                        )
-                                    }
+                                        },
+                                        onError = {
+                                            Toast.makeText(
+                                                context,
+                                                it,
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    )
                                 }
                             )
 

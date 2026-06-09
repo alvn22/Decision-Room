@@ -1,6 +1,7 @@
 package id.ac.pnm.decisionroom
 
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -80,6 +81,7 @@ class MainActivity : ComponentActivity() {
                                                     ).show()
                                                     currentScreen = Screen.DASHBOARD
                                                 } else {
+                                                    Log.e("AUTH", "${task.exception?.message}")
                                                     Toast.makeText(
                                                         context,
                                                         "Gagal: ${task.exception?.message}",

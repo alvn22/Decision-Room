@@ -52,7 +52,6 @@ fun CreateRoomScreen(
                     "Apa yang ingin diputuskan?"
                 )
             },
-
             modifier =
                 Modifier.fillMaxWidth()
         )
@@ -68,31 +67,23 @@ fun CreateRoomScreen(
         )
 
         LazyColumn {
-
             itemsIndexed(
                 viewModel.options
             ) { index, option ->
-
                 OutlinedTextField(
-
                     value = option,
-
                     onValueChange = {
-
                         viewModel.options[index] =
                             it
                     },
-
                     label = {
                         Text(
                             "Opsi ${index + 1}"
                         )
                     },
-
                     modifier =
                         Modifier.fillMaxWidth()
                 )
-
                 Spacer(
                     modifier = Modifier.height(8.dp)
                 )
@@ -100,23 +91,18 @@ fun CreateRoomScreen(
         }
 
         OutlinedButton(
-
             onClick = {
-
                 viewModel.addOption()
             }
 
         ) {
-
             Icon(
                 Icons.Outlined.Add,
                 null
             )
-
             Spacer(
                 modifier = Modifier.width(8.dp)
             )
-
             Text("Add Option")
         }
 
@@ -125,7 +111,6 @@ fun CreateRoomScreen(
         )
 
         Row {
-
             Text(
                 "Anonymous Voting"
             )
@@ -137,9 +122,7 @@ fun CreateRoomScreen(
             Switch(
                 checked =
                     viewModel.anonymousVoting,
-
                 onCheckedChange = {
-
                     viewModel.anonymousVoting =
                         it
                 }
@@ -151,29 +134,20 @@ fun CreateRoomScreen(
         )
 
         Button(
-
             modifier =
                 Modifier.fillMaxWidth(),
-
             onClick = {
-
                 viewModel.createRoom(
-
                     username,
-
                     onSuccess = {
-
                         Toast.makeText(
                             context,
                             "Room Created",
                             Toast.LENGTH_SHORT
                         ).show()
-
                         onRoomCreated(it)
                     },
-
                     onError = {
-
                         Toast.makeText(
                             context,
                             it,

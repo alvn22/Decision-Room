@@ -16,7 +16,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 fun ResultScreen(
     roomId: String
 ) {
-
     val viewModel: ResultViewModel =
         viewModel()
 
@@ -33,10 +32,8 @@ fun ResultScreen(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-
             CircularProgressIndicator()
         }
-
         return
     }
 
@@ -47,15 +44,21 @@ fun ResultScreen(
         mutableMapOf<Int, Int>()
 
     room.votes.values.forEach {
-
         voteCountMap[it] =
             (voteCountMap[it] ?: 0) + 1
     }
 
-    val winnerIndex =
-        voteCountMap.maxByOrNull {
-            it.value
-        }?.key ?: -1
+    val maxVote =
+        voteCountMap.values.maxOrNull() ?: 0
+
+    val winners =
+        voteCountMap
+            .filter { it.value == maxVote }
+            .keys
+            .toList()
+
+    val isTie =
+        winners.size > 1
 
     Column(
         modifier = Modifier
@@ -77,15 +80,12 @@ fun ResultScreen(
             modifier =
                 Modifier.fillMaxWidth()
         ) {
-
             Column(
                 modifier =
                     Modifier.padding(20.dp),
-
                 horizontalAlignment =
                     Alignment.CenterHorizontally
             ) {
-
                 Icon(
                     Icons.Default.EmojiEvents,
                     contentDescription = null
@@ -105,16 +105,34 @@ fun ResultScreen(
                         Modifier.height(8.dp)
                 )
 
-                Text(
-                    room.options
-                        .getOrNull(winnerIndex)
-                        ?.text ?: "-",
+                if (isTie) {
+                    Text(
+                        "DRAW",
+                        style =
+                            MaterialTheme.typography.headlineSmall
+                    )
 
-                    style =
-                        MaterialTheme
-                            .typography
-                            .headlineSmall
-                )
+                    Spacer(
+                        modifier = Modifier.height(8.dp)
+                    )
+
+                    Text(
+                        winners.joinToString("\n") {
+                            room.options[it].text
+                        }
+                    )
+
+                } else {
+                    Text(
+                        room.options[
+                            winners.first()
+                        ].text,
+                        style =
+                            MaterialTheme
+                                .typography
+                                .headlineSmall
+                    )
+                }
             }
         }
 
@@ -131,16 +149,12 @@ fun ResultScreen(
         )
 
         LazyColumn {
-
             itemsIndexed(
                 room.options
             ) { index, option ->
-
                 val count =
                     voteCountMap[index] ?: 0
-
                 val percentage =
-
                     if (totalVotes == 0)
                         0f
                     else
@@ -152,12 +166,10 @@ fun ResultScreen(
                         .fillMaxWidth()
                         .padding(vertical = 6.dp)
                 ) {
-
                     Column(
                         modifier =
                             Modifier.padding(16.dp)
                     ) {
-
                         Text(
                             option.text
                         )
@@ -171,7 +183,6 @@ fun ResultScreen(
                             progress = {
                                 percentage / 100f
                             },
-
                             modifier =
                                 Modifier.fillMaxWidth()
                         )
