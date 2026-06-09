@@ -25,18 +25,14 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import id.ac.pnm.decisionroom.PrimaryNavy
 import id.ac.pnm.decisionroom.components.BottomNavBar
 import id.ac.pnm.decisionroom.components.BottomNavItem
+import id.ac.pnm.decisionroom.components.HeaderBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun JoinRoomScreen(
     username: String,
     onCreateRoom: () -> Unit,
-    onJoinSuccess: (String) -> Unit,
-
-    onNavigateHome: () -> Unit,
-    onNavigateRoom: () -> Unit,
-    onNavigateHistory: () -> Unit,
-    onNavigateProfile: () -> Unit
+    onJoinSuccess: (String) -> Unit
 ) {
 
     val viewModel: JoinRoomViewModel = viewModel()
@@ -47,278 +43,246 @@ fun JoinRoomScreen(
         mutableStateOf("")
     }
 
-    Scaffold(
-        topBar = {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color.White)
-                    .padding(horizontal = 16.dp, vertical = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Icon(Icons.Default.Menu, contentDescription = "Menu", tint = PrimaryNavy)
-                Text(text = "Decision Room", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = PrimaryNavy)
-                Icon(Icons.Outlined.AccountCircle, contentDescription = "Profile", tint = PrimaryNavy)
-            }
-        },
-        bottomBar = {
-            BottomNavBar(
-                selected = BottomNavItem.ROOM,
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()),
 
-                onHomeClick = onNavigateHome,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
 
-                onRoomClick = onNavigateRoom,
-
-                onHistoryClick = onNavigateHistory,
-
-                onProfileClick = onNavigateProfile
-            )
-        }
-    ) { padding ->
-
-        Column(
+        Card(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState()),
-
-            horizontalAlignment = Alignment.CenterHorizontally
+                .fillMaxWidth()
+                .height(180.dp)
         ) {
 
-            Card(
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(180.dp)
+                    .fillMaxSize()
+                    .background(Color(0xFF0F2D5C)),
+                contentAlignment = Alignment.Center
             ) {
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color(0xFF0F2D5C)),
-                    contentAlignment = Alignment.Center
-                ) {
-
-                    Text(
-                        text = "Decision Room",
-                        color = Color.White,
-                        fontSize = 24.sp
-                    )
-                }
+                Text(
+                    text = "Decision Room",
+                    color = Color.White,
+                    fontSize = 24.sp
+                )
             }
+        }
 
-            Spacer(
-                modifier = Modifier.height(20.dp)
-            )
+        Spacer(
+            modifier = Modifier.height(20.dp)
+        )
 
-            Text(
-                "Join Session",
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold
-            )
+        Text(
+            "Join Session",
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Bold
+        )
 
-            Spacer(
-                modifier = Modifier.height(8.dp)
-            )
+        Spacer(
+            modifier = Modifier.height(8.dp)
+        )
 
-            Text(
-                "Enter the 6-digit room code"
-            )
+        Text(
+            "Enter the 6-digit room code"
+        )
 
-            Spacer(
-                modifier = Modifier.height(16.dp)
-            )
+        Spacer(
+            modifier = Modifier.height(16.dp)
+        )
 
-            OutlinedTextField(
-                value = roomCode,
-                onValueChange = {
+        OutlinedTextField(
+            value = roomCode,
+            onValueChange = {
 
-                    if (it.length <= 6) {
-                        roomCode = it
-                    }
-                },
+                if (it.length <= 6) {
+                    roomCode = it
+                }
+            },
 
-                label = {
-                    Text("Room Code")
-                },
+            label = {
+                Text("Room Code")
+            },
 
-                modifier = Modifier.fillMaxWidth()
-            )
+            modifier = Modifier.fillMaxWidth()
+        )
 
-            Spacer(
-                modifier = Modifier.height(16.dp)
-            )
+        Spacer(
+            modifier = Modifier.height(16.dp)
+        )
 
-            Button(
-                modifier = Modifier.fillMaxWidth(),
+        Button(
+            modifier = Modifier.fillMaxWidth(),
 
-                onClick = {
+            onClick = {
 
-                    if (roomCode.length != 6) {
+                if (roomCode.length != 6) {
+
+                    Toast.makeText(
+                        context,
+                        "Kode room harus 6 digit",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    return@Button
+                }
+
+                viewModel.joinRoom(
+                    roomCode,
+                    username,
+
+                    onSuccess = {
 
                         Toast.makeText(
                             context,
-                            "Kode room harus 6 digit",
+                            "Berhasil masuk room",
                             Toast.LENGTH_SHORT
                         ).show()
 
-                        return@Button
+                        onJoinSuccess(roomCode)
+                    },
+
+                    onError = {
+
+                        Toast.makeText(
+                            context,
+                            it,
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
+                )
+            }
+        ) {
 
-                    viewModel.joinRoom(
-                        roomCode,
-                        username,
+            Text("Enter Room")
+        }
 
-                        onSuccess = {
+        Spacer(
+            modifier = Modifier.height(24.dp)
+        )
 
-                            Toast.makeText(
-                                context,
-                                "Berhasil masuk room",
-                                Toast.LENGTH_SHORT
-                            ).show()
+        Text("OR")
 
-                            onJoinSuccess(roomCode)
-                        },
+        Spacer(
+            modifier = Modifier.height(24.dp)
+        )
 
-                        onError = {
+        Card(
+            modifier = Modifier.fillMaxWidth()
+        ) {
 
-                            Toast.makeText(
-                                context,
-                                it,
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                    )
-                }
+            Column(
+                modifier = Modifier.padding(16.dp)
             ) {
 
-                Text("Enter Room")
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+
+                    Icon(
+                        Icons.Outlined.AddBox,
+                        null
+                    )
+
+                    Spacer(
+                        modifier = Modifier.width(8.dp)
+                    )
+
+                    Text(
+                        "New Session",
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Spacer(
+                    modifier = Modifier.height(8.dp)
+                )
+
+                Text(
+                    "Start a democratic voting session"
+                )
+
+                Spacer(
+                    modifier = Modifier.height(12.dp)
+                )
+
+                Button(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = onCreateRoom
+                ) {
+
+                    Text("Create Room")
+                }
             }
+        }
 
-            Spacer(
-                modifier = Modifier.height(24.dp)
-            )
+        Spacer(
+            modifier = Modifier.height(16.dp)
+        )
 
-            Text("OR")
-
-            Spacer(
-                modifier = Modifier.height(24.dp)
-            )
+        Row {
 
             Card(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.weight(1f)
             ) {
 
                 Column(
-                    modifier = Modifier.padding(16.dp)
+                    modifier = Modifier.padding(12.dp)
                 ) {
 
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-
-                        Icon(
-                            Icons.Outlined.AddBox,
-                            null
-                        )
-
-                        Spacer(
-                            modifier = Modifier.width(8.dp)
-                        )
-
-                        Text(
-                            "New Session",
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+                    Icon(
+                        Icons.Outlined.Lock,
+                        null
+                    )
 
                     Spacer(
                         modifier = Modifier.height(8.dp)
                     )
 
                     Text(
-                        "Start a democratic voting session"
+                        "Privacy First",
+                        fontWeight = FontWeight.Bold
                     )
 
-                    Spacer(
-                        modifier = Modifier.height(12.dp)
+                    Text(
+                        "Sessions are encrypted and results are anonymized."
                     )
-
-                    Button(
-                        modifier = Modifier.fillMaxWidth(),
-                        onClick = onCreateRoom
-                    ) {
-
-                        Text("Create Room")
-                    }
                 }
             }
 
             Spacer(
-                modifier = Modifier.height(16.dp)
+                modifier = Modifier.width(8.dp)
             )
 
-            Row {
+            Card(
+                modifier = Modifier.weight(1f)
+            ) {
 
-                Card(
-                    modifier = Modifier.weight(1f)
+                Column(
+                    modifier = Modifier.padding(12.dp)
                 ) {
 
-                    Column(
-                        modifier = Modifier.padding(12.dp)
-                    ) {
+                    Icon(
+                        Icons.Outlined.FlashOn,
+                        null
+                    )
 
-                        Icon(
-                            Icons.Outlined.Lock,
-                            null
-                        )
+                    Spacer(
+                        modifier = Modifier.height(8.dp)
+                    )
 
-                        Spacer(
-                            modifier = Modifier.height(8.dp)
-                        )
+                    Text(
+                        "Real-Time",
+                        fontWeight = FontWeight.Bold
+                    )
 
-                        Text(
-                            "Privacy First",
-                            fontWeight = FontWeight.Bold
-                        )
-
-                        Text(
-                            "Sessions are encrypted and results are anonymized."
-                        )
-                    }
-                }
-
-                Spacer(
-                    modifier = Modifier.width(8.dp)
-                )
-
-                Card(
-                    modifier = Modifier.weight(1f)
-                ) {
-
-                    Column(
-                        modifier = Modifier.padding(12.dp)
-                    ) {
-
-                        Icon(
-                            Icons.Outlined.FlashOn,
-                            null
-                        )
-
-                        Spacer(
-                            modifier = Modifier.height(8.dp)
-                        )
-
-                        Text(
-                            "Real-Time",
-                            fontWeight = FontWeight.Bold
-                        )
-
-                        Text(
-                            "Live feedback\nloops for faster collective decision-making."
-                        )
-                    }
+                    Text(
+                        "Live feedback\nloops for faster collective decision-making."
+                    )
                 }
             }
         }

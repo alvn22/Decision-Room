@@ -36,181 +36,158 @@ import id.ac.pnm.decisionroom.components.HeaderBar
 fun DashboardScreen(
     username: String = "username",
     onCreateRoomClick: () -> Unit = {},
-    onNavigateHome: () -> Unit = {},
-    onNavigateRoom: () -> Unit = {},
-    onNavigateHistory: () -> Unit = {},
-    onNavigateProfile: () -> Unit = {}
+    onNavigateHistory: () -> Unit = {}
 ) {
-    Scaffold(
-        topBar = {
-            HeaderBar(
-                title = "Decision Room",
-                onMenuClick = { /* Handle Menu */ },
-                onProfileClick = onNavigateProfile
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(BackgroundLight)
+            .padding(horizontal = 16.dp)
+    ) {
+        item {
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // 1. HEADER SECTION
+            Text(
+                text = "DASHBOARD",
+                color = BlueButton,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 1.sp
             )
-        },
-        bottomBar = {
-            BottomNavBar(
-                selected = BottomNavItem.HOME,
-                onHomeClick = onNavigateHome,
-                onRoomClick = onNavigateRoom,
-                onHistoryClick = onNavigateHistory,
-                onProfileClick = onNavigateProfile
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "Welcome back, $username",
+                color = Color.Black,
+                fontSize = 24.sp,
+                fontWeight = FontWeight.ExtraBold
             )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "Your democratic insights are ready for today's\nsessions.",
+                color = TextGray,
+                fontSize = 14.sp,
+                lineHeight = 20.sp
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
         }
-    ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(BackgroundLight)
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp)
-        ) {
-            item {
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // 1. HEADER SECTION
-                Text(
-                    text = "DASHBOARD",
-                    color = BlueButton,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Welcome back, $username",
-                    color = Color.Black,
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.ExtraBold
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Your democratic insights are ready for today's\nsessions.",
-                    color = TextGray,
-                    fontSize = 14.sp,
-                    lineHeight = 20.sp
-                )
-
-                Spacer(modifier = Modifier.height(24.dp))
-            }
-            item {
-                // 2. ACTIVE ROOMS SECTION
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            Icons.Outlined.MeetingRoom,
-                            contentDescription = null,
-                            tint = PrimaryNavy
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Active Rooms",
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.Black
-                        )
-                    }
-                    Box(
-                        modifier = Modifier
-                            .background(CyanBadge, RoundedCornerShape(12.dp))
-                            .padding(horizontal = 8.dp, vertical = 4.dp)
-                    ) {
-                        Text(
-                            "3 LIVE",
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = PrimaryNavy
-                        )
-                    }
-                }
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // ACTIVE ROOM CARD
-                ActiveRoomCard()
-
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-            item {
-                // 3. CREATE ROOM BUTTON
-                Button(
-                    onClick = onCreateRoomClick,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = BlueButton)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                Icons.Outlined.AddCircleOutline,
-                                contentDescription = null,
-                                tint = PrimaryNavy
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                "Create New Room",
-                                color = PrimaryNavy,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowForward,
-                            contentDescription = null,
-                            tint = PrimaryNavy
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-            }
-            item {
-                // 4. RECENT HISTORY SECTION
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Outlined.History, contentDescription = null, tint = PrimaryNavy)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Recent History",
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.Black
-                        )
-                    }
+        item {
+            // 2. ACTIVE ROOMS SECTION
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.Outlined.MeetingRoom,
+                        contentDescription = null,
+                        tint = PrimaryNavy
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "VIEW ALL",
-                        fontSize = 12.sp,
+                        text = "Active Rooms",
+                        fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = PrimaryNavy,
-                        modifier = Modifier.clickable { onNavigateHistory() }
+                        color = Color.Black
                     )
                 }
-
-                Spacer(modifier = Modifier.height(12.dp))
+                Box(
+                    modifier = Modifier
+                        .background(CyanBadge, RoundedCornerShape(12.dp))
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        "3 LIVE",
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = PrimaryNavy
+                    )
+                }
             }
-            item {
-                // HISTORY LIST
-                HistoryItemCard(icon = Icons.Outlined.Checklist, title = "Budget Allocation 2024", status = "Approved", time = "12 hours ago")
-                Spacer(modifier = Modifier.height(8.dp))
-                HistoryItemCard(icon = Icons.Outlined.PersonSearch, title = "Lead Candidate Hiring", status = "Tie Breaker", time = "Yesterday")
-                Spacer(modifier = Modifier.height(8.dp))
-                HistoryItemCard(icon = Icons.Outlined.Campaign, title = "Marketing Campaign Pivot", status = "Rejected", time = "2 days ago")
+            Spacer(modifier = Modifier.height(12.dp))
 
-                Spacer(modifier = Modifier.height(24.dp))
+            // ACTIVE ROOM CARD
+            ActiveRoomCard()
+
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+        item {
+            // 3. CREATE ROOM BUTTON
+            Button(
+                onClick = onCreateRoomClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = BlueButton)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            Icons.Outlined.AddCircleOutline,
+                            contentDescription = null,
+                            tint = PrimaryNavy
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            "Create New Room",
+                            color = PrimaryNavy,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    Icon(
+                        Icons.AutoMirrored.Filled.ArrowForward,
+                        contentDescription = null,
+                        tint = PrimaryNavy
+                    )
+                }
             }
+
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+        item {
+            // 4. RECENT HISTORY SECTION
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Outlined.History, contentDescription = null, tint = PrimaryNavy)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Recent History",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black
+                    )
+                }
+                Text(
+                    text = "VIEW ALL",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = PrimaryNavy,
+                    modifier = Modifier.clickable { onNavigateHistory() }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+        }
+        item {
+            // HISTORY LIST
+            HistoryItemCard(icon = Icons.Outlined.Checklist, title = "Budget Allocation 2024", status = "Approved", time = "12 hours ago")
+            Spacer(modifier = Modifier.height(8.dp))
+            HistoryItemCard(icon = Icons.Outlined.PersonSearch, title = "Lead Candidate Hiring", status = "Tie Breaker", time = "Yesterday")
+            Spacer(modifier = Modifier.height(8.dp))
+            HistoryItemCard(icon = Icons.Outlined.Campaign, title = "Marketing Campaign Pivot", status = "Rejected", time = "2 days ago")
+
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }

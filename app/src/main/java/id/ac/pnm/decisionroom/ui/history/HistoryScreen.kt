@@ -32,80 +32,56 @@ import id.ac.pnm.decisionroom.components.HeaderBar
 
 
 @Composable
-fun HistoryScreen(
-    onNavigateHome: () -> Unit = {},
-    onNavigateRoom: () -> Unit = {},
-    onNavigateHistory: () -> Unit = {},
-    onNavigateProfile: () -> Unit = {}
-) {
-    Scaffold(
-        topBar = {
-            HeaderBar(
-                title = "Decision Room",
-                onMenuClick = { /* Handle Menu */ },
-                onProfileClick = onNavigateProfile
-            )
-        },
-        bottomBar = {
-            BottomNavBar(
-                selected = BottomNavItem.HISTORY,
-                onHomeClick = onNavigateHome,
-                onRoomClick = onNavigateRoom,
-                onHistoryClick = onNavigateHistory,
-                onProfileClick = onNavigateProfile
-            )
-        }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(BackgroundLight)
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp)
-                .verticalScroll(rememberScrollState())
+fun HistoryScreen()
+{
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(BackgroundLight)
+            .padding(horizontal = 16.dp)
+            .verticalScroll(rememberScrollState())
+    ) {
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // 1. HEADER SECTION
+        Text(
+            text = "History",
+            color = Color.Black,
+            fontSize = 24.sp,
+            fontWeight = FontWeight.ExtraBold
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = "Review your previous boardroom decisions and outcomes.",
+            softWrap = true,
+            color = TextGray,
+            fontSize = 16.sp,
+            lineHeight = 20.sp
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+        // 4. RECENT HISTORY SECTION
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // 1. HEADER SECTION
-            Text(
-                text = "History",
-                color = Color.Black,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.ExtraBold
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "Review your previous boardroom decisions and outcomes.",
-                softWrap = true,
-                color = TextGray,
-                fontSize = 16.sp,
-                lineHeight = 20.sp
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-            // 4. RECENT HISTORY SECTION
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Outlined.History, contentDescription = null, tint = PrimaryNavy)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Recent History",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black
-                    )
-                }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Outlined.History, contentDescription = null, tint = PrimaryNavy)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Recent History",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
             }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // HISTORY LIST
-
-            Spacer(modifier = Modifier.height(24.dp)) // Jarak ekstra di bawah sebelum bottom bar
         }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // HISTORY LIST
+
+        Spacer(modifier = Modifier.height(24.dp)) // Jarak ekstra di bawah sebelum bottom bar
     }
 }

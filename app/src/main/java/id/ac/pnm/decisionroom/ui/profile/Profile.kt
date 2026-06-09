@@ -26,20 +26,13 @@ import com.google.firebase.Firebase
 import id.ac.pnm.decisionroom.BackgroundLight
 import id.ac.pnm.decisionroom.PrimaryNavy
 import id.ac.pnm.decisionroom.TextGray
-import id.ac.pnm.decisionroom.components.BottomNavBar
-import id.ac.pnm.decisionroom.components.BottomNavItem
 import id.ac.pnm.decisionroom.model.auth.UserProfile
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     onLogoutClick: () -> Unit,
-    onNavigateToEdit: () -> Unit,
-
-    onNavigateHome: () -> Unit,
-    onNavigateRoom: () -> Unit,
-    onNavigateHistory: () -> Unit,
-    onNavigateProfile: () -> Unit
+    onNavigateToEdit: () -> Unit
 ) {
     // 1. Inisialisasi awal variabel state dengan nilai kosong/default
     var fullName by remember { mutableStateOf("") }
@@ -100,179 +93,159 @@ fun ProfileScreen(
             CircularProgressIndicator(color = PrimaryNavy)
         }
     } else {
-        // Jika data sudah tiba, gambar layout Scaffold Profil Anda
-        Scaffold(
-            topBar = {
-                Row(
+    // Jika data sudah tiba, gambar layout Scaffold Profil Anda
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(BackgroundLight)
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Profile Header Card
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White)
+            ) {
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color.White)
-                        .padding(horizontal = 16.dp, vertical = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                        .padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Icon(Icons.Default.Menu, contentDescription = "Menu", tint = PrimaryNavy)
-                    Text(text = "Decision Room", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = PrimaryNavy)
-                    Icon(Icons.Outlined.AccountCircle, contentDescription = "Profile", tint = PrimaryNavy)
+                    Box {
+                        Icon(Icons.Filled.AccountCircle, contentDescription = "Avatar", tint = Color.LightGray, modifier = Modifier.size(80.dp))
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .background(PrimaryNavy, CircleShape)
+                                .clickable { onNavigateToEdit() } // AKSI KLIK TOMBOL PENSIL
+                                .padding(6.dp)
+                        ) {
+                            Icon(Icons.Default.Edit, contentDescription = "Edit", tint = Color.White, modifier = Modifier.size(12.dp))
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // --- SEKARANG MENGGUNAKAN DATA DINAMIS ---
+                    Text(text = fullName, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+                    Text(text = role, fontSize = 12.sp, color = TextGray)
                 }
-            },
-            bottomBar = {
-                BottomNavBar(
-                    selected = BottomNavItem.PROFILE,
-
-                    onHomeClick = onNavigateHome,
-
-                    onRoomClick = onNavigateRoom,
-
-                    onHistoryClick = onNavigateHistory,
-
-                    onProfileClick = onNavigateProfile
-                )
             }
-        ) { innerPadding ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(BackgroundLight)
-                    .padding(innerPadding)
-                    .verticalScroll(rememberScrollState())
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Account Status Card
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White)
             ) {
-                // Profile Header Card
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White)
-                ) {
-                    Column(
-                        modifier = Modifier.fillMaxWidth().padding(24.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Box {
-                            Icon(Icons.Filled.AccountCircle, contentDescription = "Avatar", tint = Color.LightGray, modifier = Modifier.size(80.dp))
-                            Box(
-                                modifier = Modifier
-                                    .align(Alignment.BottomEnd)
-                                    .background(PrimaryNavy, CircleShape)
-                                    .clickable { onNavigateToEdit() } // AKSI KLIK TOMBOL PENSIL
-                                    .padding(6.dp)
-                            ) {
-                                Icon(Icons.Default.Edit, contentDescription = "Edit", tint = Color.White, modifier = Modifier.size(12.dp))
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text("ACCOUNT STATUS", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = TextGray)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(modifier = Modifier
+                                .width(2.dp)
+                                .height(30.dp)
+                                .background(
+                                    PrimaryNavy
+                                ))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Column {
+                                // --- DATA DINAMIS ---
+                                Text(text = "$votesCast", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = PrimaryNavy)
+                                Text("VOTES CAST", fontSize = 10.sp, color = TextGray)
                             }
                         }
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        // --- SEKARANG MENGGUNAKAN DATA DINAMIS ---
-                        Text(text = fullName, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Black)
-                        Text(text = role, fontSize = 12.sp, color = TextGray)
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(modifier = Modifier
+                                .width(2.dp)
+                                .height(30.dp)
+                                .background(Color(0xFF26A69A)))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Column {
+                                // --- DATA DINAMIS ---
+                                Text(text = "$roomsHosted", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF26A69A))
+                                Text("ROOMS HOSTED", fontSize = 10.sp, color = TextGray)
+                            }
+                        }
                     }
                 }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+// Settings Form (Hanya Menampilkan Data)
+            Text("Settings", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.Black, modifier = Modifier.align(Alignment.Start))
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+
+                    // --- TAMPILAN FULL NAME ---
+                    Text("FULL NAME", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = TextGray)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = fullName.ifEmpty { "-" }, // Jika kosong, tampilkan strip
+                        fontSize = 14.sp,
+                        color = Color.Black
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+                    HorizontalDivider(thickness = 0.5.dp, color = Color.LightGray)
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // --- TAMPILAN EMAIL ---
+                    Text("EMAIL ADDRESS", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = TextGray)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = email.ifEmpty { "-" },
+                        fontSize = 14.sp,
+                        color = Color.Black
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+                    HorizontalDivider(thickness = 0.5.dp, color = Color.LightGray)
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // --- TAMPILAN PASSWORD (Hanya disensor) ---
+                    Text("PASSWORD", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = TextGray)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "••••••••", // Jangan pernah menampilkan password asli ke layar
+                        fontSize = 14.sp,
+                        color = Color.Black
+                    )
+                }
+            }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Account Status Card
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text("ACCOUNT STATUS", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = TextGray)
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Box(modifier = Modifier.width(2.dp).height(30.dp).background(
-                                    PrimaryNavy
-                                ))
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Column {
-                                    // --- DATA DINAMIS ---
-                                    Text(text = "$votesCast", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = PrimaryNavy)
-                                    Text("VOTES CAST", fontSize = 10.sp, color = TextGray)
-                                }
-                            }
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Box(modifier = Modifier.width(2.dp).height(30.dp).background(Color(0xFF26A69A)))
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Column {
-                                    // --- DATA DINAMIS ---
-                                    Text(text = "$roomsHosted", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF26A69A))
-                                    Text("ROOMS HOSTED", fontSize = 10.sp, color = TextGray)
-                                }
-                            }
-                        }
-                    }
-                }
+            Spacer(modifier = Modifier.height(12.dp))
 
-                Spacer(modifier = Modifier.height(24.dp))
-
-// Settings Form (Hanya Menampilkan Data)
-                Text("Settings", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.Black, modifier = Modifier.align(Alignment.Start))
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-
-                        // --- TAMPILAN FULL NAME ---
-                        Text("FULL NAME", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = TextGray)
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = fullName.ifEmpty { "-" }, // Jika kosong, tampilkan strip
-                            fontSize = 14.sp,
-                            color = Color.Black
-                        )
-
-                        Spacer(modifier = Modifier.height(12.dp))
-                        HorizontalDivider(thickness = 0.5.dp, color = Color.LightGray)
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        // --- TAMPILAN EMAIL ---
-                        Text("EMAIL ADDRESS", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = TextGray)
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = email.ifEmpty { "-" },
-                            fontSize = 14.sp,
-                            color = Color.Black
-                        )
-
-                        Spacer(modifier = Modifier.height(12.dp))
-                        HorizontalDivider(thickness = 0.5.dp, color = Color.LightGray)
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        // --- TAMPILAN PASSWORD (Hanya disensor) ---
-                        Text("PASSWORD", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = TextGray)
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "••••••••", // Jangan pernah menampilkan password asli ke layar
-                            fontSize = 14.sp,
-                            color = Color.Black
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                OutlinedButton(
-                    onClick = onLogoutClick,
-                    modifier = Modifier.fillMaxWidth().height(50.dp),
-                    shape = RoundedCornerShape(8.dp),
-                    border = BorderStroke(1.dp, LogoutRed),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = LogoutRed)
-                ) {
-                    Icon(Icons.Outlined.ExitToApp, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Log Out")
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
+            OutlinedButton(
+                onClick = onLogoutClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                shape = RoundedCornerShape(8.dp),
+                border = BorderStroke(1.dp, LogoutRed),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = LogoutRed)
+            ) {
+                Icon(Icons.Outlined.ExitToApp, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Log Out")
             }
+
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
