@@ -20,7 +20,6 @@ import id.ac.pnm.decisionroom.PrimaryNavy // Pastikan import PrimaryNavy sesuai 
 @Composable
 fun HeaderBar(
     title: String = "Decision Room",
-    onMenuClick: () -> Unit = {},
     onProfileClick: () -> Unit = {}
 ) {
     Row(
@@ -31,14 +30,6 @@ fun HeaderBar(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        // Ikon Menu (Kiri)
-        IconButton(onClick = onMenuClick) {
-            Icon(
-                imageVector = Icons.Default.Menu,
-                contentDescription = "Menu",
-                tint = PrimaryNavy
-            )
-        }
 
         // Judul (Tengah)
         Text(
