@@ -19,6 +19,8 @@ import com.google.firebase.firestore.firestore
 import id.ac.pnm.decisionroom.model.auth.UserProfile
 import id.ac.pnm.decisionroom.ui.auth.LoginScreen
 import id.ac.pnm.decisionroom.ui.auth.RegisterScreen
+import id.ac.pnm.decisionroom.ui.dashboard.DashboardScreen
+import id.ac.pnm.decisionroom.ui.dashboard.HistoryScreen
 import id.ac.pnm.decisionroom.ui.profile.EditProfileScreen
 import id.ac.pnm.decisionroom.ui.profile.ProfileScreen
 import id.ac.pnm.decisionroom.ui.room.create.CreateRoomScreen
@@ -60,7 +62,7 @@ class MainActivity : ComponentActivity() {
                     // Cek status login
                     var currentScreen by remember {
                         mutableStateOf(
-                            if (auth.currentUser != null) Screen.ROOM else Screen.LOGIN
+                            if (auth.currentUser != null) Screen.DASHBOARD else Screen.LOGIN
                         )
                     }
 
@@ -154,7 +156,24 @@ class MainActivity : ComponentActivity() {
                         }
 
                         Screen.DASHBOARD -> {
-                            Text("Dashboard")
+                            DashboardScreen(
+                                username = username,
+                                onCreateRoomClick = {
+                                    currentScreen = Screen.CREATE_ROOM
+                                },
+                                onNavigateHome = {
+                                    currentScreen = Screen.DASHBOARD
+                                },
+                                onNavigateRoom = {
+                                    currentScreen = Screen.ROOM
+                                },
+                                onNavigateHistory = {
+                                    currentScreen = Screen.HISTORY
+                                },
+                                onNavigateProfile = {
+                                    currentScreen = Screen.PROFILE
+                                }
+                            )
                         }
 
                         Screen.ROOM -> {
@@ -232,7 +251,20 @@ class MainActivity : ComponentActivity() {
                         }
 
                         Screen.HISTORY -> {
-                            Text("History")
+                            HistoryScreen(
+                                onNavigateHome = {
+                                    currentScreen = Screen.DASHBOARD
+                                },
+                                onNavigateRoom = {
+                                    currentScreen = Screen.ROOM
+                                },
+                                onNavigateHistory = {
+                                    currentScreen = Screen.HISTORY
+                                },
+                                onNavigateProfile = {
+                                    currentScreen = Screen.PROFILE
+                                }
+                            )
                         }
 
                         Screen.PROFILE -> {
