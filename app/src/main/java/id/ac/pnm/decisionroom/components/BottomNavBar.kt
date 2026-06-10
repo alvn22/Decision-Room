@@ -23,7 +23,6 @@ fun BottomNavBar(
 ) {
 
     NavigationBar {
-
         NavigationBarItem(
             selected = selected == BottomNavItem.HOME,
             onClick = onHomeClick,

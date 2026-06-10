@@ -9,25 +9,27 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import id.ac.pnm.decisionroom.BackgroundLight
+import id.ac.pnm.decisionroom.PrimaryNavy
+import id.ac.pnm.decisionroom.TextGray
 
 @Composable
 fun ResultScreen(
-    roomId: String
+    roomId: String,
+    onBackHome: () -> Unit
 ) {
     val viewModel: ResultViewModel =
         viewModel()
 
     LaunchedEffect(Unit) {
-
         viewModel.observeRoom(roomId)
     }
 
     val room = viewModel.room
-
     if (room == null) {
-
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
@@ -49,34 +51,45 @@ fun ResultScreen(
     }
 
     val maxVote =
-        voteCountMap.values.maxOrNull() ?: 0
+        voteCountMap.maxOfOrNull {
+            it.value
+        } ?: 0
 
     val winners =
-        voteCountMap
-            .filter { it.value == maxVote }
-            .keys
-            .toList()
+        voteCountMap.filter {
+            it.value == maxVote
+        }
 
     val isTie =
         winners.size > 1
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .padding(16.dp)
     ) {
-
         Text(
-            "Voting Result",
+            room.title,
             style =
-                MaterialTheme.typography.headlineMedium
+                MaterialTheme
+                    .typography
+                    .headlineMedium,
+            fontWeight =
+                FontWeight.Bold
         )
 
         Spacer(
-            modifier = Modifier.height(16.dp)
+            Modifier.height(20.dp)
         )
 
         Card(
+            colors = CardDefaults.cardColors(
+                containerColor = PrimaryNavy
+            ),
+            elevation = CardDefaults.elevatedCardElevation(
+                defaultElevation = 6.dp
+            ),
             modifier =
                 Modifier.fillMaxWidth()
         ) {
@@ -88,45 +101,50 @@ fun ResultScreen(
             ) {
                 Icon(
                     Icons.Default.EmojiEvents,
-                    contentDescription = null
+                    contentDescription = null,
+                    tint = BackgroundLight
                 )
-
                 Spacer(
-                    modifier =
-                        Modifier.height(12.dp)
-                )
-
-                Text(
-                    "Winner"
-                )
-
-                Spacer(
-                    modifier =
-                        Modifier.height(8.dp)
+                    Modifier.height(12.dp)
                 )
 
                 if (isTie) {
                     Text(
-                        "DRAW",
+                        "DRAW RESULT",
+                        color = BackgroundLight,
                         style =
-                            MaterialTheme.typography.headlineSmall
+                            MaterialTheme
+                                .typography
+                                .headlineSmall
                     )
 
                     Spacer(
-                        modifier = Modifier.height(8.dp)
+                        Modifier.height(8.dp)
                     )
 
-                    Text(
-                        winners.joinToString("\n") {
-                            room.options[it].text
-                        }
-                    )
+                    winners.keys.forEach {
+                        Text(
+                            room.options[it].text,
+                            color = BackgroundLight,
+                        )
+                    }
 
                 } else {
+                    val winnerIndex =
+                        winners.keys.first()
+
                     Text(
-                        room.options[
-                            winners.first()
-                        ].text,
+                        "WINNER",
+                        color = BackgroundLight,
+                    )
+
+                    Spacer(
+                        Modifier.height(8.dp)
+                    )
+
+                    Text(
+                        room.options[winnerIndex].text,
+                        color = BackgroundLight,
                         style =
                             MaterialTheme
                                 .typography
@@ -137,7 +155,7 @@ fun ResultScreen(
         }
 
         Spacer(
-            modifier = Modifier.height(20.dp)
+            Modifier.height(16.dp)
         )
 
         Text(
@@ -145,10 +163,13 @@ fun ResultScreen(
         )
 
         Spacer(
-            modifier = Modifier.height(16.dp)
+            Modifier.height(16.dp)
         )
 
-        LazyColumn {
+        LazyColumn(
+            modifier =
+                Modifier.weight(1f)
+        ) {
             itemsIndexed(
                 room.options
             ) { index, option ->
@@ -159,45 +180,73 @@ fun ResultScreen(
                         0f
                     else
                         count.toFloat() /
-                                totalVotes.toFloat() * 100f
+                                totalVotes.toFloat()
 
                 Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 6.dp)
+                    colors = CardDefaults.cardColors(
+                        containerColor = BackgroundLight
+                    ),
+                    elevation = CardDefaults.elevatedCardElevation(
+                        defaultElevation = 6.dp
+                    ),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(
+                                vertical = 6.dp
+                            )
                 ) {
                     Column(
                         modifier =
-                            Modifier.padding(16.dp)
+                            Modifier.padding(
+                                16.dp
+                            )
                     ) {
                         Text(
-                            option.text
+                            option.text,
+                            fontWeight =
+                                FontWeight.Bold
                         )
 
                         Spacer(
-                            modifier =
-                                Modifier.height(8.dp)
+                            Modifier.height(
+                                8.dp
+                            )
                         )
 
                         LinearProgressIndicator(
                             progress = {
-                                percentage / 100f
+                                percentage
                             },
+                            color = PrimaryNavy,
                             modifier =
                                 Modifier.fillMaxWidth()
                         )
 
                         Spacer(
-                            modifier =
-                                Modifier.height(8.dp)
+                            Modifier.height(
+                                8.dp
+                            )
                         )
 
                         Text(
-                            "$count votes (${percentage.toInt()}%)"
+                            "$count votes (${(percentage * 100).toInt()}%)"
                         )
                     }
                 }
             }
+        }
+
+        Button(
+            onClick = onBackHome,
+            colors = ButtonDefaults.buttonColors(containerColor = PrimaryNavy),
+            modifier =
+                Modifier.fillMaxWidth()
+        ) {
+            Text(
+                "BACK TO DASHBOARD",
+                color = BackgroundLight
+            )
         }
     }
 }

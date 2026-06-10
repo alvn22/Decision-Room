@@ -8,7 +8,6 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -178,23 +177,15 @@ class MainActivity : ComponentActivity() {
 
                         Screen.ROOM -> {
                             JoinRoomScreen(
-
-                                username = username,
-
-                                onCreateRoom = {
-
+                                onNavigateCreateRoom = {
                                     currentScreen =
                                         Screen.CREATE_ROOM
                                 },
-
-                                onJoinSuccess = {
-
-                                    selectedRoomId = it
-
-                                    currentScreen  =
+                                onJoinSuccess = { roomId ->
+                                    selectedRoomId = roomId
+                                    currentScreen =
                                         Screen.WAITING_ROOM
                                 },
-
                                 onNavigateHome = {
                                     currentScreen = Screen.DASHBOARD
                                 },
@@ -221,15 +212,21 @@ class MainActivity : ComponentActivity() {
 
                         Screen.CREATE_ROOM -> {
                             CreateRoomScreen(
-
-                                username = username,
-
-                                onRoomCreated = {
-
-                                    selectedRoomId = it
-
-                                    currentScreen =
-                                        Screen.WAITING_ROOM
+                                onRoomCreated = { roomId ->
+                                    selectedRoomId = roomId
+                                    currentScreen = Screen.WAITING_ROOM
+                                },
+                                onNavigateHome = {
+                                    currentScreen = Screen.DASHBOARD
+                                },
+                                onNavigateRoom = {
+                                    currentScreen = Screen.ROOM
+                                },
+                                onNavigateHistory = {
+                                    currentScreen = Screen.HISTORY
+                                },
+                                onNavigateProfile = {
+                                    currentScreen = Screen.PROFILE
                                 }
                             )
                         }
@@ -246,7 +243,11 @@ class MainActivity : ComponentActivity() {
 
                         Screen.RESULT_ROOM -> {
                             ResultScreen(
-                                roomId = selectedRoomId
+                                roomId = selectedRoomId,
+                                onBackHome = {
+                                    currentScreen =
+                                        Screen.DASHBOARD
+                                },
                             )
                         }
 

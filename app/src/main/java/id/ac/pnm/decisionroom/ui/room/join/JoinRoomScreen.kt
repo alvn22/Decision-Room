@@ -7,11 +7,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddBox
+import androidx.compose.material.icons.filled.Login
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.AddBox
+import androidx.compose.material.icons.outlined.Bolt
 import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material.icons.outlined.FlashOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,26 +24,24 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import id.ac.pnm.decisionroom.PrimaryNavy
+import id.ac.pnm.decisionroom.*
 import id.ac.pnm.decisionroom.components.BottomNavBar
 import id.ac.pnm.decisionroom.components.BottomNavItem
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun JoinRoomScreen(
-    username: String,
-    onCreateRoom: () -> Unit,
+    onNavigateCreateRoom: () -> Unit,
     onJoinSuccess: (String) -> Unit,
-
     onNavigateHome: () -> Unit,
-    onNavigateRoom: () -> Unit,
     onNavigateHistory: () -> Unit,
-    onNavigateProfile: () -> Unit
+    onNavigateProfile: () -> Unit,
+    onNavigateRoom: () -> Unit
 ) {
 
-    val viewModel: JoinRoomViewModel = viewModel()
-
     val context = LocalContext.current
+
+    val viewModel: JoinRoomViewModel =
+        viewModel()
 
     var roomCode by remember {
         mutableStateOf("")
@@ -65,262 +65,362 @@ fun JoinRoomScreen(
         bottomBar = {
             BottomNavBar(
                 selected = BottomNavItem.ROOM,
-
                 onHomeClick = onNavigateHome,
-
                 onRoomClick = onNavigateRoom,
-
                 onHistoryClick = onNavigateHistory,
-
                 onProfileClick = onNavigateProfile
             )
         }
     ) { padding ->
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState()),
-
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(horizontal = 16.dp)
+                .verticalScroll(
+                    rememberScrollState()
+                )
         ) {
+            Spacer(
+                Modifier.height(16.dp)
+            )
 
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(180.dp)
+                    .height(180.dp),
+                shape =
+                    RoundedCornerShape(16.dp),
+                elevation = CardDefaults.elevatedCardElevation(
+                    defaultElevation = 6.dp
+                ),
             ) {
-
                 Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color(0xFF0F2D5C)),
-                    contentAlignment = Alignment.Center
+                    modifier =
+                        Modifier.fillMaxSize()
                 ) {
-
+                    Surface(
+                        modifier =
+                            Modifier.fillMaxSize(),
+                        color =
+                            PrimaryNavy.copy(
+                                alpha = 0.75f
+                            )
+                    ) {}
                     Text(
-                        text = "Decision Room",
-                        color = Color.White,
-                        fontSize = 24.sp
+                        text =
+                            "Empowering democratic transparency in high-stakes collaboration.",
+                        color =
+                            Color.White,
+                        modifier =
+                            Modifier
+                                .align(
+                                    Alignment.BottomStart
+                                )
+                                .padding(16.dp),
+                        fontWeight =
+                            FontWeight.Medium
                     )
                 }
             }
 
             Spacer(
-                modifier = Modifier.height(20.dp)
-            )
-
-            Text(
-                "Join Session",
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            Spacer(
-                modifier = Modifier.height(8.dp)
-            )
-
-            Text(
-                "Enter the 6-digit room code"
-            )
-
-            Spacer(
-                modifier = Modifier.height(16.dp)
-            )
-
-            OutlinedTextField(
-                value = roomCode,
-                onValueChange = {
-
-                    if (it.length <= 6) {
-                        roomCode = it
-                    }
-                },
-
-                label = {
-                    Text("Room Code")
-                },
-
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(
-                modifier = Modifier.height(16.dp)
-            )
-
-            Button(
-                modifier = Modifier.fillMaxWidth(),
-
-                onClick = {
-
-                    if (roomCode.length != 6) {
-
-                        Toast.makeText(
-                            context,
-                            "Kode room harus 6 digit",
-                            Toast.LENGTH_SHORT
-                        ).show()
-
-                        return@Button
-                    }
-
-                    viewModel.joinRoom(
-                        roomCode,
-                        username,
-
-                        onSuccess = {
-
-                            Toast.makeText(
-                                context,
-                                "Berhasil masuk room",
-                                Toast.LENGTH_SHORT
-                            ).show()
-
-                            onJoinSuccess(roomCode)
-                        },
-
-                        onError = {
-
-                            Toast.makeText(
-                                context,
-                                it,
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                    )
-                }
-            ) {
-
-                Text("Enter Room")
-            }
-
-            Spacer(
-                modifier = Modifier.height(24.dp)
-            )
-
-            Text("OR")
-
-            Spacer(
-                modifier = Modifier.height(24.dp)
+                Modifier.height(20.dp)
             )
 
             Card(
-                modifier = Modifier.fillMaxWidth()
+                modifier =
+                    Modifier.fillMaxWidth(),
+                shape =
+                    RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = BackgroundLight
+                ),
+                elevation = CardDefaults.elevatedCardElevation(
+                    defaultElevation = 6.dp
+                ),
             ) {
-
                 Column(
-                    modifier = Modifier.padding(16.dp)
+                    modifier =
+                        Modifier.padding(16.dp),
+                    horizontalAlignment =
+                        Alignment.CenterHorizontally
                 ) {
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-
-                        Icon(
-                            Icons.Outlined.AddBox,
-                            null
-                        )
-
-                        Spacer(
-                            modifier = Modifier.width(8.dp)
-                        )
-
-                        Text(
-                            "New Session",
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+                    Text(
+                        text = "Join Session",
+                        fontSize = 22.sp,
+                        fontWeight =
+                            FontWeight.Bold
+                    )
 
                     Spacer(
-                        modifier = Modifier.height(8.dp)
+                        Modifier.height(8.dp)
                     )
 
                     Text(
-                        "Start a democratic voting session"
+                        text =
+                            "Enter the 6-digit code provided by your host",
+                        color =
+                            TextGray
                     )
 
                     Spacer(
-                        modifier = Modifier.height(12.dp)
+                        Modifier.height(16.dp)
+                    )
+
+                    OutlinedTextField(
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = PrimaryNavy,
+                            focusedContainerColor = PrimaryNavy.copy(alpha = 0.15f)
+                        ),
+                        value = roomCode,
+                        onValueChange = {
+                            if (it.length <= 6) {
+                                roomCode = it
+                            }
+                        },
+                        modifier =
+                            Modifier.fillMaxWidth(),
+                        singleLine = true,
+                    )
+
+                    Spacer(
+                        Modifier.height(16.dp)
                     )
 
                     Button(
-                        modifier = Modifier.fillMaxWidth(),
-                        onClick = onCreateRoom
+                        colors = ButtonDefaults.buttonColors(containerColor = BlueButton),
+                        onClick = {
+                            viewModel.joinRoom(
+                                roomId = roomCode,
+                                username = "",
+                                onSuccess = {
+                                    Toast
+                                        .makeText(
+                                            context,
+                                            "Berhasil masuk room",
+                                            Toast.LENGTH_SHORT
+                                        )
+                                        .show()
+                                    onJoinSuccess(
+                                        roomCode
+                                    )
+                                },
+                                onError = {
+                                    Toast
+                                        .makeText(
+                                            context,
+                                            it,
+                                            Toast.LENGTH_SHORT
+                                        )
+                                        .show()
+                                }
+                            )
+                        },
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .height(54.dp)
                     ) {
-
-                        Text("Create Room")
+                        Icon(
+                            Icons.Default.Login,
+                            null
+                        )
+                        Spacer(
+                            Modifier.width(8.dp)
+                        )
+                        Text(
+                            "Enter Room"
+                        )
                     }
                 }
             }
 
             Spacer(
-                modifier = Modifier.height(16.dp)
+                Modifier.height(20.dp)
             )
 
-            Row {
+            Row(
+                verticalAlignment =
+                    Alignment.CenterVertically
+            ) {
+                HorizontalDivider(
+                    modifier =
+                        Modifier.weight(1f)
+                )
+                Text(
+                    " OR ",
+                    color = TextGray
+                )
+                HorizontalDivider(
+                    modifier =
+                        Modifier.weight(1f)
+                )
+            }
 
-                Card(
-                    modifier = Modifier.weight(1f)
+            Spacer(
+                Modifier.height(20.dp)
+            )
+
+            Card(
+                colors = CardDefaults.cardColors(
+                    containerColor = BackgroundLight
+                ),
+                elevation = CardDefaults.elevatedCardElevation(
+                    defaultElevation = 6.dp
+                ),
+                modifier =
+                    Modifier.fillMaxWidth(),
+                shape =
+                    RoundedCornerShape(16.dp)
+            ) {
+                Column(
+                    modifier =
+                        Modifier.padding(16.dp)
                 ) {
-
-                    Column(
-                        modifier = Modifier.padding(12.dp)
+                    Row(
+                        verticalAlignment =
+                            Alignment.CenterVertically
                     ) {
-
                         Icon(
-                            Icons.Outlined.Lock,
-                            null
+                            Icons.Outlined.AddBox,
+                            null,
+                            tint = PrimaryNavy
                         )
 
                         Spacer(
-                            modifier = Modifier.height(8.dp)
+                            Modifier.width(12.dp)
                         )
 
-                        Text(
-                            "Privacy First",
-                            fontWeight = FontWeight.Bold
-                        )
+                        Column {
+                            Text(
+                                "New Session",
+                                fontWeight =
+                                    FontWeight.Bold
+                            )
+                            Text(
+                                "Start a democratic voting session for your team.",
+                                color =
+                                    TextGray
+                            )
+                        }
+                    }
+
+                    Spacer(
+                        Modifier.height(16.dp)
+                    )
+
+                    Button(
+                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryNavy),
+                        onClick =
+                            onNavigateCreateRoom,
+                        modifier =
+                            Modifier.fillMaxWidth()
+                    ) {
 
                         Text(
-                            "Sessions are encrypted and results are anonymized."
+                            "Create Room"
+                        )
+                    }
+                }
+            }
+
+            Spacer(
+                Modifier.height(20.dp)
+            )
+
+            Row {
+                Card(
+                    modifier =
+                        Modifier.weight(1f),
+                    colors = CardDefaults.cardColors(
+                        containerColor = BackgroundLight
+                    ),
+                    elevation = CardDefaults.elevatedCardElevation(
+                        defaultElevation = 6.dp
+                    ),
+                ) {
+                    Column(
+                        modifier =
+                            Modifier.padding(
+                                12.dp
+                            )
+                    ) {
+                        Icon(
+                            Icons.Outlined.Lock,
+                            null,
+                            tint =
+                                PrimaryNavy
+                        )
+                        Spacer(
+                            Modifier.height(
+                                8.dp
+                            )
+                        )
+                        Text(
+                            "PRIVACY FIRST",
+                            fontWeight =
+                                FontWeight.Bold
+                        )
+                        Text(
+                            "Sessions are encrypted and results anonymized.",
+                            color =
+                                TextGray,
+                            fontSize =
+                                12.sp
                         )
                     }
                 }
 
                 Spacer(
-                    modifier = Modifier.width(8.dp)
+                    Modifier.width(12.dp)
                 )
 
                 Card(
-                    modifier = Modifier.weight(1f)
+                    modifier =
+                        Modifier.weight(1f),
+                    colors = CardDefaults.cardColors(
+                        containerColor = BackgroundLight
+                    ),
+                    elevation = CardDefaults.elevatedCardElevation(
+                        defaultElevation = 6.dp
+                    ),
                 ) {
-
                     Column(
-                        modifier = Modifier.padding(12.dp)
+                        modifier =
+                            Modifier.padding(
+                                12.dp
+                            )
                     ) {
-
                         Icon(
-                            Icons.Outlined.FlashOn,
-                            null
+                            Icons.Outlined.Bolt,
+                            null,
+                            tint = PrimaryNavy
                         )
-
                         Spacer(
-                            modifier = Modifier.height(8.dp)
+                            Modifier.height(
+                                8.dp
+                            )
                         )
-
                         Text(
-                            "Real-Time",
-                            fontWeight = FontWeight.Bold
+                            "REAL-TIME",
+                            fontWeight =
+                                FontWeight.Bold
                         )
-
                         Text(
-                            "Live feedback\nloops for faster collective decision-making."
+                            "Live feedback loops for faster collective decisions.",
+                            color =
+                                TextGray,
+                            fontSize =
+                                12.sp
                         )
                     }
                 }
             }
+
+            Spacer(
+                Modifier.height(20.dp)
+            )
         }
     }
 }
