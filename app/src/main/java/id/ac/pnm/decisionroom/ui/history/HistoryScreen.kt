@@ -1,111 +1,83 @@
-package id.ac.pnm.decisionroom.ui.dashboard
+package id.ac.pnm.decisionroom.ui.history
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.outlined.*
-import androidx.compose.material3.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import id.ac.pnm.decisionroom.BackgroundLight
-import id.ac.pnm.decisionroom.BlueButton
-import id.ac.pnm.decisionroom.CyanBadge
-import id.ac.pnm.decisionroom.PrimaryNavy
-import id.ac.pnm.decisionroom.RedDot
+import androidx.lifecycle.viewmodel.compose.viewModel
 import id.ac.pnm.decisionroom.TextGray
-import id.ac.pnm.decisionroom.components.BottomNavBar
-import id.ac.pnm.decisionroom.components.BottomNavItem
-import id.ac.pnm.decisionroom.components.HeaderBar
-
+import id.ac.pnm.decisionroom.database.AppDatabase
 
 @Composable
-fun HistoryScreen(
-    onNavigateHome: () -> Unit = {},
-    onNavigateRoom: () -> Unit = {},
-    onNavigateHistory: () -> Unit = {},
-    onNavigateProfile: () -> Unit = {}
-) {
-    Scaffold(
-        topBar = {
-            HeaderBar(
-                title = "Decision Room",
-                onMenuClick = { /* Handle Menu */ },
-                onProfileClick = onNavigateProfile
-            )
-        },
-        bottomBar = {
-            BottomNavBar(
-                selected = BottomNavItem.HISTORY,
-                onHomeClick = onNavigateHome,
-                onRoomClick = onNavigateRoom,
-                onHistoryClick = onNavigateHistory,
-                onProfileClick = onNavigateProfile
-            )
-        }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(BackgroundLight)
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp)
-                .verticalScroll(rememberScrollState())
-        ) {
-            Spacer(modifier = Modifier.height(16.dp))
+fun HistoryScreen() {
 
-            // 1. HEADER SECTION
-            Text(
-                text = "History",
-                color = Color.Black,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.ExtraBold
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "Review your previous boardroom decisions and outcomes.",
-                softWrap = true,
-                color = TextGray,
-                fontSize = 16.sp,
-                lineHeight = 20.sp
-            )
+    // 1. Ambil konteks dari HP untuk membuka database
+    val context = LocalContext.current
 
-            Spacer(modifier = Modifier.height(24.dp))
-            // 4. RECENT HISTORY SECTION
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+    // 2. Siapkan "biji kopi" (DAO)
+    val database = AppDatabase.getDatabase(context)
+    val historyDao = database.historyDao()
+
+    // 3. Masukkan "biji kopi" ke dalam mesin (ViewModel) menggunakan Factory
+    val viewModel: HistoryViewModel = viewModel(
+        factory = HistoryViewModel.Factory(historyDao)
+    )
+
+    // Membaca data RoomDB secara real-time
+    val historyList by viewModel.localHistory.collectAsState(initial = emptyList())
+
+    // (Opsional) Jika kamu mau Opsi 2 (Sinkronisasi dari Firestore saat layar dibuka)
+    LaunchedEffect(Unit) {
+        viewModel.syncHistory()
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        // 1. HEADER SECTION
+        Text(
+            text = "History",
+            color = Color.Black,
+            fontSize = 24.sp,
+            fontWeight = FontWeight.ExtraBold
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = "Review your previous boardroom decisions and outcomes.",
+            softWrap = true,
+            color = TextGray,
+            fontSize = 16.sp,
+            lineHeight = 20.sp
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+        if (historyList.isEmpty()) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("Belum ada riwayat voting.")
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Outlined.History, contentDescription = null, tint = PrimaryNavy)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Recent History",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black
-                    )
+                items(historyList) { item ->
+                    // Menampilkan data sederhana (Bisa kamu ganti dengan Card desainmu nanti)
+                    Text(text = "Ruang: ${item.roomName} | Pemenang: ${item.winnerOption}")
                 }
             }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // HISTORY LIST
-
-            Spacer(modifier = Modifier.height(24.dp)) // Jarak ekstra di bawah sebelum bottom bar
         }
     }
 }

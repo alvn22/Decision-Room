@@ -1,25 +1,41 @@
 package id.ac.pnm.decisionroom
 
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.core.snap
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
-import id.ac.pnm.decisionroom.model.auth.UserProfile
+import id.ac.pnm.decisionroom.components.BottomNavBar
+import id.ac.pnm.decisionroom.components.HeaderBar
+import id.ac.pnm.decisionroom.database.AppDatabase
 import id.ac.pnm.decisionroom.ui.auth.LoginScreen
 import id.ac.pnm.decisionroom.ui.auth.RegisterScreen
 import id.ac.pnm.decisionroom.ui.dashboard.DashboardScreen
-import id.ac.pnm.decisionroom.ui.dashboard.HistoryScreen
+import id.ac.pnm.decisionroom.ui.history.HistoryScreen
+import id.ac.pnm.decisionroom.ui.history.HistoryViewModel
 import id.ac.pnm.decisionroom.ui.profile.EditProfileScreen
 import id.ac.pnm.decisionroom.ui.profile.ProfileScreen
 import id.ac.pnm.decisionroom.ui.room.create.CreateRoomScreen
@@ -27,20 +43,13 @@ import id.ac.pnm.decisionroom.ui.room.join.JoinRoomScreen
 import id.ac.pnm.decisionroom.ui.room.result.ResultScreen
 import id.ac.pnm.decisionroom.ui.room.voting.VotingRoomScreen
 import id.ac.pnm.decisionroom.ui.room.waiting.WaitingRoomScreen
+import id.ac.pnm.decisionroom.viewmodel.AuthViewModel
+import id.ac.pnm.decisionroom.viewmodel.ProfileViewModel
 
-// Enum untuk rute halaman
-enum class Screen {
-    LOGIN, REGISTER, DASHBOARD, ROOM, CREATE_ROOM, WAITING_ROOM, VOTING_ROOM, RESULT_ROOM, HISTORY, PROFILE, EDIT_PROFILE
-}
 
 class MainActivity : ComponentActivity() {
-    private lateinit var auth: FirebaseAuth
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // Inisialisasi Firebase Auth
-        auth = Firebase.auth
 
         setContent {
             MaterialTheme {
@@ -49,369 +58,277 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     val context = LocalContext.current
+                    val authViewModel: AuthViewModel = viewModel()
+                    val profileViewModel: ProfileViewModel = viewModel()
 
-                    var selectedRoomId by remember {
-                        mutableStateOf("")
-                    }
+                    // 1. Pastikan kamu sudah menginisialisasi database Room milikmu di MainActivity
+                    val database = AppDatabase.getDatabase(context) // Sesuaikan dengan nama kelas master Room DB kalian
+                    val historyDao = database.historyDao()
+
+                    // 2. Panggil ViewModel menggunakan bantuan Factory bawaan kita
+                    val historyViewModel: HistoryViewModel = viewModel(
+                        factory = HistoryViewModel.Factory(historyDao)
+                    )
+
+                    val navController = rememberNavController()
 
                     var username by remember {
                         mutableStateOf("Guest")
                     }
 
-                    // Cek status login
-                    var currentScreen by remember {
-                        mutableStateOf(
-                            if (auth.currentUser != null) Screen.DASHBOARD else Screen.LOGIN
-                        )
+                    // Membaca rute halaman yang sedang aktif saat ini secara real-time
+                    val navBackStackEntry by navController.currentBackStackEntryAsState()
+                    val currentRoute = navBackStackEntry?.destination?.route
+
+                    // 2. Mengambil Data Nama dari Firestore Otomatis Saat Berada di Dashboard
+                    LaunchedEffect(currentRoute) {
+                        if (currentRoute == "dashboard" && authViewModel.isUserLoggedIn()) {
+
+                            val uid = FirebaseAuth.getInstance().currentUser?.uid
+                            if (uid != null) {
+                                Firebase.firestore.collection("users").document(uid)
+                                    .get()
+                                    .addOnSuccessListener { document ->
+                                        if (document != null && document.exists()) {
+                                            val fullName = document.getString("fullName")
+                                            if (!fullName.isNullOrEmpty()) {
+                                                username = fullName
+                                            }
+                                        }
+                                    }
+                            }
+                        }
                     }
 
-                    // Logika Navigasi Antar Halaman
-                    when (currentScreen) {
+                    // Logika apply components ke layar tertentu
+                    val showBars =
+                        currentRoute != null && currentRoute in listOf("dashboard", "room", "history", "profile")
 
-                        Screen.LOGIN -> {
-                            LoginScreen(
-                                onLoginClick = { email, password ->
-                                    if (email.isNotEmpty() && password.isNotEmpty()) {
-                                        auth.signInWithEmailAndPassword(email, password)
-                                            .addOnCompleteListener(this) { task ->
-                                                if (task.isSuccessful) {
-                                                    Toast.makeText(
-                                                        context,
-                                                        "Login Berhasil!",
-                                                        Toast.LENGTH_SHORT
-                                                    ).show()
-                                                    currentScreen = Screen.DASHBOARD
-                                                } else {
-                                                    Log.e("AUTH", "${task.exception?.message}")
-                                                    Toast.makeText(
-                                                        context,
-                                                        "Gagal: ${task.exception?.message}",
-                                                        Toast.LENGTH_LONG
-                                                    ).show()
+                    Scaffold(
+                        topBar = {
+                            if (showBars) {
+                                HeaderBar(
+                                    onProfileClick = {
+                                        // Jika belum di profile, tombol kanan akan mengantar ke profile
+                                        if (currentRoute != "profile") {
+                                            navController.navigate("profile")
+                                        }
+                                    }
+                                )
+                            }
+                        },
+                        bottomBar = {
+                            if (showBars) {
+                                BottomNavBar(navController = navController)
+                            }
+                        }
+                    ) { innerPadding ->
+                        NavHost(
+                            navController = navController,
+                            startDestination = "dashboard",
+                            modifier = Modifier.padding(innerPadding),
+                            // Transisi biar bagus aja
+                            enterTransition = { fadeIn(animationSpec = snap()) },
+                            exitTransition = { fadeOut(animationSpec = snap()) },
+                            popEnterTransition = { fadeIn(animationSpec = snap()) },
+                            popExitTransition = { fadeOut(animationSpec = snap()) }
+                        ) {
+                            composable("login") {
+                                LoginScreen(
+                                    onLoginClick = { email, password ->
+                                        authViewModel.login(
+                                            email = email,
+                                            password = password,
+                                            onSuccess = {
+                                                Toast.makeText(
+                                                    context,
+                                                    "Login Berhasil!",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                                navController.navigate("dashboard") {
+                                                    popUpTo("login") { inclusive = true }
+                                                }
+                                            },
+                                            onError = { errorMessage ->
+                                                Toast.makeText(
+                                                    context,
+                                                    "Gagal: $errorMessage",
+                                                    Toast.LENGTH_LONG
+                                                ).show()
+                                            }
+                                        )
+                                    },
+                                    onNavigateToRegister = { navController.navigate("register") }
+                                )
+                            }
+
+                            composable("register") {
+                                RegisterScreen(
+                                    onRegisterClick = { namaLengkap, email, password ->
+                                        authViewModel.register(
+                                            namaLengkap = namaLengkap,
+                                            email = email,
+                                            password = password,
+                                            onSuccess = {
+                                                Toast.makeText(
+                                                    context,
+                                                    "Registrasi Berhasil! Selamat Datang.",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                                navController.navigate("dashboard") {
+                                                    popUpTo("login") { inclusive = true }
+                                                }
+                                            },
+                                            onError = { errorMessage ->
+                                                Toast.makeText(
+                                                    context,
+                                                    errorMessage,
+                                                    Toast.LENGTH_LONG
+                                                ).show()
+                                            }
+                                        )
+                                    },
+                                    onNavigateToLogin = { navController.navigate("login") }
+                                )
+                            }
+
+                            composable("dashboard") {
+                                DashboardScreen(
+                                    username = username,
+                                    onCreateRoomClick = {
+                                        navController.navigate("create_room")
+                                    },
+                                    onNavigateHistory = {
+                                        navController.navigate("history")
+                                    }
+                                )
+                            }
+
+                            composable("room") {
+                                JoinRoomScreen(
+                                    onNavigateCreateRoom = { navController.navigate("create_room") },
+                                    onJoinSuccess = { roomId ->
+                                        navController.navigate("waiting_room/$roomId")
+                                    }
+                                )
+                            }
+
+                            composable(
+                                route = "waiting_room/{roomId}",
+                                arguments = listOf(navArgument("roomId") { type = NavType.StringType })
+                            ) { backStackEntry ->
+                                val roomId = backStackEntry.arguments?.getString("roomId") ?: ""
+                                WaitingRoomScreen(
+                                    roomId = roomId,
+                                    navigateToVoting = { navController.navigate("voting_room/$roomId") }
+                                )
+                            }
+
+                            composable("create_room") {
+                                CreateRoomScreen(
+                                    onRoomCreated = { roomId ->
+                                        navController.navigate("waiting_room/$roomId") {
+                                            popUpTo("dashboard") // Mencegah user kembali ke form input saat menekan Back
+                                        }
+                                    }
+                                )
+                            }
+
+                            composable(
+                                route = "voting_room/{roomId}",
+                                arguments = listOf(navArgument("roomId") {
+                                    type = NavType.StringType
+                                })
+                            ) { backStackEntry ->
+                                val roomId = backStackEntry.arguments?.getString("roomId") ?: ""
+                                VotingRoomScreen(
+                                    roomId = roomId,
+                                    navigateToResult = {
+                                        navController.navigate("result_room/$roomId") {
+                                            popUpTo("dashboard") { inclusive = false }
+                                        }
+                                    }
+                                )
+                            }
+
+                            composable(
+                                route = "result_room/{roomId}",
+                                arguments = listOf(navArgument("roomId") {
+                                    type = NavType.StringType
+                                })
+                            ) { backStackEntry ->
+                                val roomId = backStackEntry.arguments?.getString("roomId") ?: ""
+                                ResultScreen(
+                                    roomId = roomId,
+                                    onBackHome = {
+                                        navController.navigate("dashboard")
+                                    }
+                                )
+                            }
+
+                            composable("history") {
+                                HistoryScreen()
+                            }
+
+                            composable("profile") {
+                                ProfileScreen(
+                                    onLogoutClick = {
+                                        authViewModel.logout(
+                                            onSuccess = {
+                                                Toast.makeText(
+                                                    context,
+                                                    "Berhasil Keluar Akun",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                                navController.navigate("login") {
+                                                    popUpTo(0) {
+                                                        inclusive = true
+                                                    } // Bersihkan tumpukan halaman agar aman
                                                 }
                                             }
-                                    } else {
-                                        Toast.makeText(
-                                            context,
-                                            "Email dan Password wajib diisi",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
-                                },
-                                onNavigateToRegister = {
-                                    currentScreen = Screen.REGISTER
-                                }
-                            )
-                        }
+                                        )
+                                    },
+                                    onNavigateToEdit = { navController.navigate("edit_profile") },
+                                )
+                            }
 
-                        Screen.REGISTER -> {
-                            RegisterScreen(
-                                onRegisterClick = { namaLengkap, email, password ->
-                                    if (email.isNotEmpty() && password.isNotEmpty() && namaLengkap.isNotEmpty()) {
-                                        auth.createUserWithEmailAndPassword(email, password)
-                                            .addOnCompleteListener(this) { task ->
-                                                if (task.isSuccessful) {
-                                                    val uid = auth.currentUser?.uid ?: ""
-                                                    val newUserProfile = UserProfile(
-                                                        uid = uid,
-                                                        fullName = namaLengkap,
-                                                        email = email,
-                                                        role = "Member",
-                                                        votesCast = 0,
-                                                        roomsHosted = 0,
-                                                        emailNotifications = true
-                                                    )
+                            composable("edit_profile") {
+                                val appContext = context.applicationContext
 
-                                                    val db = Firebase.firestore
-                                                    db.collection("users").document(uid)
-                                                        .set(newUserProfile)
-
-                                                    Toast.makeText(
-                                                        context,
-                                                        "Registrasi Berhasil! Selamat Datang.",
-                                                        Toast.LENGTH_SHORT
-                                                    ).show()
-                                                    currentScreen = Screen.DASHBOARD
-                                                } else {
-                                                    Toast.makeText(
-                                                        context,
-                                                        "Gagal mendaftar: ${task.exception?.message}",
-                                                        Toast.LENGTH_LONG
-                                                    ).show()
-                                                }
+                                EditProfileScreen(
+                                    onBackClick = { navController.navigate("profile") },
+                                    // Menggunakan profileViewModel di halaman Edit Profile
+                                    onSaveClick = { newName, newEmail, newPassword ->
+                                        profileViewModel.updateProfile(
+                                            newName = newName,
+                                            newEmail = newEmail,
+                                            newPassword = newPassword,
+                                            onSuccess = { successMessage ->
+                                                Toast.makeText(
+                                                    appContext,
+                                                    successMessage,
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                                navController.navigate("profile")
+                                            },
+                                            onError = { errorMessage ->
+                                                Toast.makeText(
+                                                    appContext,
+                                                    errorMessage,
+                                                    Toast.LENGTH_LONG
+                                                ).show()
+                                            },
+                                            onNoChanges = {
+                                                Toast.makeText(
+                                                    appContext,
+                                                    "Tidak ada data perubahan yang diisi",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
                                             }
-                                    } else {
-                                        Toast.makeText(
-                                            context,
-                                            "Semua data wajib diisi",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
+                                        )
                                     }
-                                },
-                                onNavigateToLogin = {
-                                    currentScreen = Screen.LOGIN
-                                }
-                            )
-                        }
-
-                        Screen.DASHBOARD -> {
-                            DashboardScreen(
-                                username = username,
-                                onCreateRoomClick = {
-                                    currentScreen = Screen.CREATE_ROOM
-                                },
-                                onNavigateHome = {
-                                    currentScreen = Screen.DASHBOARD
-                                },
-                                onNavigateRoom = {
-                                    currentScreen = Screen.ROOM
-                                },
-                                onNavigateHistory = {
-                                    currentScreen = Screen.HISTORY
-                                },
-                                onNavigateProfile = {
-                                    currentScreen = Screen.PROFILE
-                                }
-                            )
-                        }
-
-                        Screen.ROOM -> {
-                            JoinRoomScreen(
-                                onNavigateCreateRoom = {
-                                    currentScreen =
-                                        Screen.CREATE_ROOM
-                                },
-                                onJoinSuccess = { roomId ->
-                                    selectedRoomId = roomId
-                                    currentScreen =
-                                        Screen.WAITING_ROOM
-                                },
-                                onNavigateHome = {
-                                    currentScreen = Screen.DASHBOARD
-                                },
-                                onNavigateRoom = {
-                                    currentScreen = Screen.ROOM
-                                },
-                                onNavigateHistory = {
-                                    currentScreen = Screen.HISTORY
-                                },
-                                onNavigateProfile = {
-                                    currentScreen = Screen.PROFILE
-                                }
-                            )
-                        }
-
-                        Screen.WAITING_ROOM -> {
-                            WaitingRoomScreen(
-                                roomId = selectedRoomId,
-                                navigateToVoting = {
-                                    currentScreen = Screen.VOTING_ROOM
-                                }
-                            )
-                        }
-
-                        Screen.CREATE_ROOM -> {
-                            CreateRoomScreen(
-                                onRoomCreated = { roomId ->
-                                    selectedRoomId = roomId
-                                    currentScreen = Screen.WAITING_ROOM
-                                },
-                                onNavigateHome = {
-                                    currentScreen = Screen.DASHBOARD
-                                },
-                                onNavigateRoom = {
-                                    currentScreen = Screen.ROOM
-                                },
-                                onNavigateHistory = {
-                                    currentScreen = Screen.HISTORY
-                                },
-                                onNavigateProfile = {
-                                    currentScreen = Screen.PROFILE
-                                }
-                            )
-                        }
-
-                        Screen.VOTING_ROOM -> {
-                            VotingRoomScreen(
-                                roomId = selectedRoomId,
-                                navigateToResult = {
-                                    currentScreen =
-                                        Screen.RESULT_ROOM
-                                }
-                            )
-                        }
-
-                        Screen.RESULT_ROOM -> {
-                            ResultScreen(
-                                roomId = selectedRoomId,
-                                onBackHome = {
-                                    currentScreen =
-                                        Screen.DASHBOARD
-                                },
-                            )
-                        }
-
-                        Screen.HISTORY -> {
-                            HistoryScreen(
-                                onNavigateHome = {
-                                    currentScreen = Screen.DASHBOARD
-                                },
-                                onNavigateRoom = {
-                                    currentScreen = Screen.ROOM
-                                },
-                                onNavigateHistory = {
-                                    currentScreen = Screen.HISTORY
-                                },
-                                onNavigateProfile = {
-                                    currentScreen = Screen.PROFILE
-                                }
-                            )
-                        }
-
-                        Screen.PROFILE -> {
-                            ProfileScreen(
-                                onLogoutClick = {
-                                    auth.signOut()
-                                    Toast.makeText(
-                                        context,
-                                        "Berhasil Keluar Akun",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                    currentScreen = Screen.LOGIN
-                                },
-                                onNavigateToEdit = {
-                                    currentScreen = Screen.EDIT_PROFILE
-                                },
-                                onNavigateHome = {
-                                    currentScreen = Screen.DASHBOARD
-                                },
-                                onNavigateRoom = {
-                                    currentScreen = Screen.ROOM
-                                },
-                                onNavigateHistory = {
-                                    currentScreen = Screen.HISTORY
-                                },
-                                onNavigateProfile = {
-                                    currentScreen = Screen.PROFILE
-                                }
-                            )
-                        }
-
-                        Screen.EDIT_PROFILE -> {
-                            // Tangkap context level aplikasi agar Toast "kebal" dari perpindahan layar
-                            val appContext = context.applicationContext
-
-                            EditProfileScreen(
-                                onBackClick = {
-                                    currentScreen = Screen.PROFILE
-                                },
-                                // Menerima 3 parameter sesuai penyesuaian Anda
-                                onSaveClick = { newName, newEmail, newPassword ->
-                                    val uid = auth.currentUser?.uid
-                                    val user = auth.currentUser
-
-                                    if (uid != null) {
-                                        val db = Firebase.firestore
-                                        var anyChanges = false
-
-                                        // 1. UPDATE NAMA DI FIRESTORE
-                                        if (newName.isNotEmpty()) {
-                                            anyChanges = true
-                                            db.collection("users").document(uid)
-                                                .update("fullName", newName)
-                                                .addOnSuccessListener {
-                                                    // Gunakan appContext di sini
-                                                    Toast.makeText(
-                                                        appContext,
-                                                        "Nama berhasil diperbarui!",
-                                                        Toast.LENGTH_SHORT
-                                                    ).show()
-                                                    currentScreen = Screen.PROFILE
-                                                }
-                                                .addOnFailureListener { e ->
-                                                    Toast.makeText(
-                                                        appContext,
-                                                        "Gagal memperbarui nama: ${e.message}",
-                                                        Toast.LENGTH_SHORT
-                                                    ).show()
-                                                }
-                                        }
-
-                                        // 2. UPDATE EMAIL DI FIREBASE AUTH & FIRESTORE
-                                        if (newEmail.isNotEmpty()) {
-                                            anyChanges = true
-                                            user?.updateEmail(newEmail)
-                                                ?.addOnCompleteListener { task ->
-                                                    if (task.isSuccessful) {
-                                                        db.collection("users").document(uid)
-                                                            .update("email", newEmail)
-                                                            .addOnSuccessListener {
-                                                                Toast.makeText(
-                                                                    appContext,
-                                                                    "Email berhasil diperbarui!",
-                                                                    Toast.LENGTH_SHORT
-                                                                ).show()
-                                                                currentScreen = Screen.PROFILE
-                                                            }
-                                                            .addOnFailureListener { e ->
-                                                                Toast.makeText(
-                                                                    appContext,
-                                                                    "Auth email ganti, tapi gagal update database: ${e.message}",
-                                                                    Toast.LENGTH_SHORT
-                                                                ).show()
-                                                            }
-                                                    } else {
-                                                        Toast.makeText(
-                                                            appContext,
-                                                            "Gagal ganti email: ${task.exception?.message}",
-                                                            Toast.LENGTH_LONG
-                                                        ).show()
-                                                    }
-                                                }
-                                        }
-
-                                        // 3. UPDATE PASSWORD
-                                        if (newPassword.isNotEmpty()) {
-                                            anyChanges = true
-                                            user?.updatePassword(newPassword)
-                                                ?.addOnSuccessListener {
-                                                    Toast.makeText(
-                                                        appContext,
-                                                        "Password berhasil diperbarui!",
-                                                        Toast.LENGTH_SHORT
-                                                    ).show()
-                                                    currentScreen = Screen.PROFILE
-                                                }
-                                                ?.addOnFailureListener { e ->
-                                                    Toast.makeText(
-                                                        appContext,
-                                                        "Gagal ganti password: ${e.message}",
-                                                        Toast.LENGTH_LONG
-                                                    ).show()
-                                                }
-                                        }
-
-                                        // Jika tombol ditekan tapi semua form kosong
-                                        if (!anyChanges) {
-                                            Toast.makeText(
-                                                appContext,
-                                                "Tidak ada data perubahan yang diisi",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-                                        } else {
-                                            // Jika ada data yang diisi, kita biarkan layar pindah setelah proses di dalam onSuccessListener selesai
-                                            // (Catatan: Jika user mengisi Nama DAN Email, maka akan muncul 2 Toast berurutan. Ini normal dan bagus untuk feedback).
-                                        }
-
-                                    } else {
-                                        Toast.makeText(
-                                            appContext,
-                                            "Sesi salah, silakan login kembali",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
-                                }
-                            )
+                                )
+                            }
                         }
                     }
                 }
