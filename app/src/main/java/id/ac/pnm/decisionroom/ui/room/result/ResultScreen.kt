@@ -9,12 +9,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import id.ac.pnm.decisionroom.BackgroundLight
 import id.ac.pnm.decisionroom.PrimaryNavy
 import id.ac.pnm.decisionroom.TextGray
+import id.ac.pnm.decisionroom.database.AppDatabase
 
 @Composable
 fun ResultScreen(
@@ -26,6 +28,16 @@ fun ResultScreen(
 
     LaunchedEffect(Unit) {
         viewModel.observeRoom(roomId)
+    }
+    val context = LocalContext.current
+    val database = AppDatabase.getDatabase(context)
+    val historyDao = database.historyDao()
+    val roomData = viewModel.room
+
+    LaunchedEffect(roomData) {
+        if (roomData != null) {
+            viewModel.saveToHistory(historyDao)
+        }
     }
 
     val room = viewModel.room

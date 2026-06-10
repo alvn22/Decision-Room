@@ -15,4 +15,7 @@ interface HistoryDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertHistory(history: HistoryEntity)
+
+    @Query("DELETE FROM voting_history") // 🔑 Sesuaikan dengan nama tabelmu di @Entity
+    suspend fun clearAllHistory()
 }

@@ -193,13 +193,31 @@ class MainActivity : ComponentActivity() {
                             }
 
                             composable("dashboard") {
+                                val context = LocalContext.current
+                                val database = AppDatabase.getDatabase(context)
+                                val historyDao = database.historyDao()
+
+                                val historyViewModel: HistoryViewModel = viewModel(
+                                    factory = HistoryViewModel.Factory(historyDao)
+                                )
+
+                                val historyList by historyViewModel.localHistory.collectAsState(initial = emptyList())
+
                                 DashboardScreen(
                                     username = username,
+                                    recentHistory = historyList,
+
                                     onCreateRoomClick = {
                                         navController.navigate("create_room")
                                     },
                                     onNavigateHistory = {
-                                        navController.navigate("history")
+                                        navController.navigate("history") {
+                                            launchSingleTop = true
+                                            popUpTo("dashboard") { saveState = true }
+                                        }
+                                    },
+                                    onNavigateToResult = { roomId ->
+                                        navController.navigate("result_room/$roomId")
                                     }
                                 )
                             }
@@ -267,26 +285,27 @@ class MainActivity : ComponentActivity() {
                             }
 
                             composable("history") {
-                                HistoryScreen()
+                                HistoryScreen(
+                                    onNavigateToResult = { roomId ->
+                                        navController.navigate("result_room/$roomId")
+                                    }
+                                )
                             }
 
                             composable("profile") {
                                 ProfileScreen(
                                     onLogoutClick = {
-                                        authViewModel.logout(
-                                            onSuccess = {
-                                                Toast.makeText(
-                                                    context,
-                                                    "Berhasil Keluar Akun",
-                                                    Toast.LENGTH_SHORT
-                                                ).show()
-                                                navController.navigate("login") {
-                                                    popUpTo(0) {
-                                                        inclusive = true
-                                                    } // Bersihkan tumpukan halaman agar aman
-                                                }
+                                        Toast.makeText(
+                                            context,
+                                            "Berhasil Keluar Akun",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+
+                                        navController.navigate("login") {
+                                            popUpTo(0) {
+                                                inclusive = true // 🔑 Membakar semua tumpukan riwayat halaman (aman!)
                                             }
-                                        )
+                                        }
                                     },
                                     onNavigateToEdit = { navController.navigate("edit_profile") },
                                 )

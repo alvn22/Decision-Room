@@ -16,9 +16,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 // --- Tambahkan Import Firebase & Model ---
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
@@ -26,7 +28,10 @@ import com.google.firebase.Firebase
 import id.ac.pnm.decisionroom.BackgroundLight
 import id.ac.pnm.decisionroom.PrimaryNavy
 import id.ac.pnm.decisionroom.TextGray
+import id.ac.pnm.decisionroom.database.AppDatabase
 import id.ac.pnm.decisionroom.model.auth.UserProfile
+import id.ac.pnm.decisionroom.viewmodel.AuthViewModel
+import id.ac.pnm.decisionroom.viewmodel.ProfileViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,47 +45,35 @@ fun ProfileScreen(
     var role by remember { mutableStateOf("Member") }
     var votesCast by remember { mutableStateOf(0) }
     var roomsHosted by remember { mutableStateOf(0) }
-    var emailNotifications by remember { mutableStateOf(true) }
-
-    var currentPassword by remember { mutableStateOf("********") }
-    var newPassword by remember { mutableStateOf("") }
 
     // State untuk memunculkan loading spinner saat mengambil data dari internet
     var isLoading by remember { mutableStateOf(true) }
 
-    val auth = Firebase.auth
-    val db = Firebase.firestore
+    val authViewModel: AuthViewModel = viewModel()
+    val profileViewModel: ProfileViewModel = viewModel()
+
+
+    val context = LocalContext.current
+    val historyDao = AppDatabase.getDatabase(context).historyDao()
     val LogoutRed = Color(0xFFD32F2F)
     val LightBlueAccent = Color(0xFF8C9EFF)
 
     // 2. LOGIKA MENGAMBIL DATA DARI FIRESTORE
     // Blok ini berjalan otomatis sekali saat ProfileScreen pertama kali dimuat
     LaunchedEffect(Unit) {
-        val uid = auth.currentUser?.uid
-        if (uid != null) {
-            db.collection("users").document(uid).get()
-                .addOnSuccessListener { document ->
-                    if (document != null && document.exists()) {
-                        // Mengonversi dokumen Firestore kembali menjadi objek Data Class UserProfile
-                        val profile = document.toObject(UserProfile::class.java)
-                        if (profile != null) {
-                            // Masukkan data dari Firebase ke dalam variabel state UI
-                            fullName = profile.fullName
-                            email = profile.email
-                            role = profile.role
-                            votesCast = profile.votesCast
-                            roomsHosted = profile.roomsHosted
-                            emailNotifications = profile.emailNotifications
-                        }
-                    }
-                    isLoading = false // Hentikan loading setelah data sukses diambil
-                }
-                .addOnFailureListener {
-                    isLoading = false // Hentikan loading jika gagal (misal tidak ada internet)
-                }
-        } else {
-            isLoading = false
-        }
+        profileViewModel.getUserProfile(
+            onSuccess = { profile ->
+                fullName = profile.fullName
+                email = profile.email
+                role = profile.role
+                votesCast = profile.votesCast
+                roomsHosted = profile.roomsHosted
+                isLoading = false
+            },
+            onError = {
+                isLoading = false
+            }
+        )
     }
 
     // 3. KONDISI TAMPILAN
@@ -232,7 +225,12 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             OutlinedButton(
-                onClick = onLogoutClick,
+                onClick = {
+                    authViewModel.logout(
+                        historyDao = historyDao,
+                        onSuccess = { onLogoutClick() }
+                    )
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),

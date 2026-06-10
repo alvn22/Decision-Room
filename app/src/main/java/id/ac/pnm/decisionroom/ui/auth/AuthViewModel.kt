@@ -1,10 +1,13 @@
 package id.ac.pnm.decisionroom.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
+import id.ac.pnm.decisionroom.database.HistoryDao
 import id.ac.pnm.decisionroom.model.auth.UserProfile
+import kotlinx.coroutines.launch
 
 class AuthViewModel : ViewModel() {
     // Inisialisasi Firebase Authentication untuk mengurus proses login/register
@@ -101,10 +104,18 @@ class AuthViewModel : ViewModel() {
     }
 
     // Fungsi untuk mengeluarkan user dari sesi saat ini
-    fun logout(onSuccess: () -> Unit) {
-        // Hapus sesi di Firebase Auth
-        auth.signOut()
-        // Beri tahu UI bahwa proses logout sudah selesai (misal untuk pindah halaman ke LoginScreen)
-        onSuccess()
+    fun logout(
+        historyDao: HistoryDao,
+        onSuccess: () -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                historyDao.clearAllHistory()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+            auth.signOut()
+            onSuccess()
+        }
     }
 }

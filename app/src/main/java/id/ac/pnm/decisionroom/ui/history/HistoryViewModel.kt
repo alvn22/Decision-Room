@@ -18,7 +18,6 @@ class HistoryViewModel(private val historyDao: HistoryDao) : ViewModel() {
     private val firestore = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
 
-    // 1. Aliran Data Real-time dari RoomDB ke UI Compose
     // Menggunakan stateIn agar Flow dari Room berubah menjadi StateFlow yang siap dibaca collectAsState()
     val localHistory: StateFlow<List<HistoryEntity>> = historyDao.getAllHistory()
         .stateIn(
