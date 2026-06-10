@@ -53,6 +53,12 @@ fun WaitingRoomScreen(
         }
     }
 
+    LaunchedEffect(room?.status) {
+        if (room?.status == "voting") {
+            navigateToVoting()
+        }
+    }
+
     if (room == null) {
         Box(
             modifier = Modifier.fillMaxSize(),
