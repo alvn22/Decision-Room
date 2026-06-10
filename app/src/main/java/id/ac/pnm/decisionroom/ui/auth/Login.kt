@@ -101,14 +101,6 @@ fun LoginScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text("KATA SANDI", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = TextGray)
-                    Text(
-                        text = "Lupa Password?",
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = PrimaryNavy,
-                        modifier = Modifier.clickable { /* Handle Lupa Password */ }
-                    )
                 }
                 Spacer(modifier = Modifier.height(4.dp))
                 OutlinedTextField(
