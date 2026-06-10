@@ -10,9 +10,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import id.ac.pnm.decisionroom.TextGray
 import id.ac.pnm.decisionroom.database.AppDatabase
 
 @Composable
@@ -43,6 +47,23 @@ fun HistoryScreen() {
             .fillMaxSize()
             .padding(16.dp)
     ) {
+        // 1. HEADER SECTION
+        Text(
+            text = "History",
+            color = Color.Black,
+            fontSize = 24.sp,
+            fontWeight = FontWeight.ExtraBold
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = "Review your previous boardroom decisions and outcomes.",
+            softWrap = true,
+            color = TextGray,
+            fontSize = 16.sp,
+            lineHeight = 20.sp
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
         if (historyList.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text("Belum ada riwayat voting.")

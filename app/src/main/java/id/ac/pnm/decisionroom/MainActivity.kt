@@ -30,10 +30,12 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.firestore
 import id.ac.pnm.decisionroom.components.BottomNavBar
 import id.ac.pnm.decisionroom.components.HeaderBar
+import id.ac.pnm.decisionroom.database.AppDatabase
 import id.ac.pnm.decisionroom.ui.auth.LoginScreen
 import id.ac.pnm.decisionroom.ui.auth.RegisterScreen
 import id.ac.pnm.decisionroom.ui.dashboard.DashboardScreen
-import id.ac.pnm.decisionroom.ui.dashboard.HistoryScreen
+import id.ac.pnm.decisionroom.ui.history.HistoryScreen
+import id.ac.pnm.decisionroom.ui.history.HistoryViewModel
 import id.ac.pnm.decisionroom.ui.profile.EditProfileScreen
 import id.ac.pnm.decisionroom.ui.profile.ProfileScreen
 import id.ac.pnm.decisionroom.ui.room.create.CreateRoomScreen
@@ -58,6 +60,15 @@ class MainActivity : ComponentActivity() {
                     val context = LocalContext.current
                     val authViewModel: AuthViewModel = viewModel()
                     val profileViewModel: ProfileViewModel = viewModel()
+
+                    // 1. Pastikan kamu sudah menginisialisasi database Room milikmu di MainActivity
+                    val database = AppDatabase.getDatabase(context) // Sesuaikan dengan nama kelas master Room DB kalian
+                    val historyDao = database.historyDao()
+
+                    // 2. Panggil ViewModel menggunakan bantuan Factory bawaan kita
+                    val historyViewModel: HistoryViewModel = viewModel(
+                        factory = HistoryViewModel.Factory(historyDao)
+                    )
 
                     val navController = rememberNavController()
 
@@ -234,7 +245,11 @@ class MainActivity : ComponentActivity() {
                                 val roomId = backStackEntry.arguments?.getString("roomId") ?: ""
                                 VotingRoomScreen(
                                     roomId = roomId,
-                                    navigateToResult = { navController.navigate("result_room/$roomId") }
+                                    navigateToResult = {
+                                        navController.navigate("result_room/$roomId") {
+                                            popUpTo("dashboard") { inclusive = false }
+                                        }
+                                    }
                                 )
                             }
 
@@ -245,13 +260,13 @@ class MainActivity : ComponentActivity() {
                                 })
                             ) { backStackEntry ->
                                 val roomId = backStackEntry.arguments?.getString("roomId") ?: ""
-                                ResultScreen(roomId = roomId)
+                                ResultScreen(
+                                    roomId = roomId
+                                )
                             }
 
                             composable("history") {
-                                HistoryScreen(
-                                    // Isi masih kosong
-                                )
+                                HistoryScreen()
                             }
 
                             composable("profile") {
