@@ -206,8 +206,7 @@ class MainActivity : ComponentActivity() {
 
                             composable("room") {
                                 JoinRoomScreen(
-                                    username = username,
-                                    onCreateRoom = { navController.navigate("create_room") },
+                                    onNavigateCreateRoom = { navController.navigate("create_room") },
                                     onJoinSuccess = { roomId ->
                                         navController.navigate("waiting_room/$roomId")
                                     }
@@ -227,7 +226,6 @@ class MainActivity : ComponentActivity() {
 
                             composable("create_room") {
                                 CreateRoomScreen(
-                                    username = username,
                                     onRoomCreated = { roomId ->
                                         navController.navigate("waiting_room/$roomId") {
                                             popUpTo("dashboard") // Mencegah user kembali ke form input saat menekan Back
@@ -261,7 +259,10 @@ class MainActivity : ComponentActivity() {
                             ) { backStackEntry ->
                                 val roomId = backStackEntry.arguments?.getString("roomId") ?: ""
                                 ResultScreen(
-                                    roomId = roomId
+                                    roomId = roomId,
+                                    onBackHome = {
+                                        navController.navigate("dashboard")
+                                    }
                                 )
                             }
 
