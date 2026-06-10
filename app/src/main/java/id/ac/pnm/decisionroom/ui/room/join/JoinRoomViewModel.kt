@@ -24,34 +24,47 @@ class JoinRoomViewModel : ViewModel() {
             return
         }
 
-        Firebase.firestore
-            .collection("users")
-            .document(uid)
-            .get()
-            .addOnSuccessListener {
-                val participant =
-                    Participant(
-                        name =
-                            it.getString("fullName")
-                                ?: "Guest",
-                        host = false,
-                        ready = true
+        repository.getRoom(
+            roomId,
+            onSuccess = { room ->
+                if (room == null) {
+                    onError("Room tidak ditemukan")
+                    return@getRoom
+                }
+                if (room.status == "voting") {
+                    onError(
+                        "Voting sedang dimulai"
                     )
-                repository.joinRoom(
-                    roomId,
-                    uid,
-                    participant,
-                    onSuccess,
-                    onError
-                )
-            }
-
-//        repository.joinRoom(
-//            roomId,
-//            uid,
-//            participant,
-//            onSuccess,
-//            onError
-//        )
+                    return@getRoom
+                } else if (room.status == "finished"){
+                    onError(
+                        "Voting telah selesai"
+                    )
+                    return@getRoom
+                }
+                Firebase.firestore
+                    .collection("users")
+                    .document(uid)
+                    .get()
+                    .addOnSuccessListener {
+                        val participant =
+                            Participant(
+                                name =
+                                    it.getString("fullName")
+                                        ?: "Guest",
+                                host = false,
+                                ready = true
+                            )
+                        repository.joinRoom(
+                            roomId,
+                            uid,
+                            participant,
+                            onSuccess,
+                            onError
+                        )
+                    }
+            },
+            onError = onError
+        )
     }
 }

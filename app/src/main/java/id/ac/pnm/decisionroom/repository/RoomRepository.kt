@@ -30,6 +30,43 @@ class RoomRepository {
             }
     }
 
+    fun roomExists(
+        roomId: String,
+        onResult: (Boolean) -> Unit
+    ) {
+        db.child("rooms")
+            .child(roomId)
+            .get()
+            .addOnSuccessListener {
+                onResult(
+                    it.exists()
+                )
+            }
+            .addOnFailureListener {
+                onResult(false)
+            }
+    }
+
+    fun getRoom(
+        roomId: String,
+        onSuccess: (Room?) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        db.child("rooms")
+            .child(roomId)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                val room =
+                    snapshot.getValue(Room::class.java)
+                onSuccess(room)
+            }
+            .addOnFailureListener {
+                onError(
+                    it.message ?: "Gagal mengambil room"
+                )
+            }
+    }
+
     fun joinRoom(
         roomId: String,
         uid: String,

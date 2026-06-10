@@ -5,7 +5,6 @@ data class Room(
     var title: String = "",
     var hostId: String = "",
     var status: String = "waiting",
-    var anonymousVoting: Boolean = false,
     var participants: Map<String, Participant> = emptyMap(),
     var options: List<VoteOption> = emptyList(),
     var votes: Map<String, Int> = emptyMap()

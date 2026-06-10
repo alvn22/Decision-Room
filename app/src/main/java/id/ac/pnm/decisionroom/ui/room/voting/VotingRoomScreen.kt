@@ -9,159 +9,210 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import id.ac.pnm.decisionroom.BackgroundLight
 import id.ac.pnm.decisionroom.FirebaseManager
+import id.ac.pnm.decisionroom.PrimaryNavy
 
 @Composable
 fun VotingRoomScreen(
     roomId: String,
     navigateToResult: () -> Unit
+
 ) {
-    val context = LocalContext.current
-    val viewModel:
-            VotingRoomViewModel =
+    val viewModel: VotingRoomViewModel =
         viewModel()
 
-    LaunchedEffect(Unit) {
+    val context =
+        LocalContext.current
 
+    LaunchedEffect(Unit) {
         viewModel.observeRoom(
             roomId
         )
     }
 
-    val room = viewModel.room
+    val room =
+        viewModel.room
 
     if (room == null) {
-
         Box(
-            Modifier.fillMaxSize()
+            modifier =
+                Modifier.fillMaxSize(),
+            contentAlignment =
+                Alignment.Center
         ) {
-
             CircularProgressIndicator()
         }
 
         return
     }
 
-    val uid =
-        FirebaseManager.currentUid()
-
-    val alreadyVote =
-        room.votes.containsKey(uid)
-
-    LaunchedEffect(room.status) {
-
-        if (room.status == "finished") {
-
+    LaunchedEffect(room.status
+    ) {
+        if (
+            room.status ==
+            "finished"
+        ) {
             navigateToResult()
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
+    val totalParticipant =
+        room.participants.size
 
+    val totalVote =
+        room.votes.size
+
+    Column(
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+    ) {
         Text(
             room.title,
             style =
-                MaterialTheme.typography.headlineSmall
+                MaterialTheme
+                    .typography
+                    .headlineSmall,
+            fontWeight =
+                FontWeight.Bold
         )
 
         Spacer(
-            modifier = Modifier.height(16.dp)
+            Modifier.height(8.dp)
         )
 
         Text(
-            if (alreadyVote) "Vote berhasil dikirim"
-            else "Silakan pilih satu opsi"
+            "$totalVote / $totalParticipant voted"
         )
 
         Spacer(
-            modifier = Modifier.height(16.dp)
+            Modifier.height(20.dp)
         )
 
         LazyColumn(
-            modifier = Modifier.weight(1f)
+            modifier =
+                Modifier.weight(1f)
         ) {
-
             itemsIndexed(
                 room.options
             ) { index, option ->
-
                 Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 6.dp)
-                ) {
-
-                    Row(
-                        modifier = Modifier
+                    colors = CardDefaults.cardColors(
+                        containerColor = PrimaryNavy
+                    ),
+                    elevation = CardDefaults.elevatedCardElevation(
+                        defaultElevation = 6.dp
+                    ),
+                    modifier =
+                        Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 6.dp)
+                            .padding(
+                                vertical = 6.dp
+                            ),
+                    onClick = {
+                        viewModel.vote(
+                            roomId,
+                            index,
+                            onSuccess = {
+
+                            },
+                            onError = {
+                                Toast.makeText(
+                                    context,
+                                    it,
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        )
+                    }
+                ) {
+                    Column(
+                        modifier =
+                            Modifier
+                                .padding(16.dp)
                     ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
+                        Text(
+                            option.text,
+                            fontWeight = FontWeight.Bold,
+                            color = BackgroundLight
+                        )
 
-                            verticalAlignment =
-                                Alignment.CenterVertically
+                        Spacer(
+                            Modifier.height(
+                                8.dp
+                            )
+                        )
+
+                        if (viewModel.selectedOption == index
                         ) {
-                            RadioButton(
-                                selected =
-                                    room.votes[uid] == index,
-
-                                onClick = {
-                                    viewModel.vote(
-                                        roomId,
-                                        index,
-                                        onSuccess = {
-
-                                        },
-                                        onError = {
-                                            Toast.makeText(
-                                                context,
-                                                it,
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-                                        }
+                            AssistChip(
+                                onClick = {},
+                                colors = AssistChipDefaults.assistChipColors(
+                                    containerColor = BackgroundLight
+                                ),
+                                label = {
+                                    Text(
+                                        "Selected",
+                                        color = PrimaryNavy
                                     )
                                 }
                             )
-
-                            Spacer(
-                                modifier = Modifier.width(8.dp)
-                            )
-
-                            Text(option.text)
                         }
                     }
                 }
             }
         }
 
-        Spacer(
-            modifier = Modifier.weight(1f)
-        )
-
-        if (uid == room.hostId) {
+        if (FirebaseManager.currentUid() == room.hostId
+        ) {
 
             Button(
-
-                modifier =
-                    Modifier.fillMaxWidth(),
-
+                colors = ButtonDefaults.buttonColors(containerColor = PrimaryNavy),
                 onClick = {
+                    if (
+                        room.votes.size
+                        <
+                        room.participants.size
+                    ) {
 
-                    viewModel.finishVoting(
-                        roomId
+                        Toast
+                            .makeText(
+                                context,
+                                "Masih ada peserta yang belum memilih",
+                                Toast.LENGTH_SHORT
+                            )
+                            .show()
+
+                        return@Button
+                    }
+
+                    viewModel.endVoting(
+                        roomId,
+                        onSuccess = {
+                            Toast.makeText(
+                                context,
+                                "Voting selesai",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        },
+                        onError = {
+                            Toast.makeText(
+                                context,
+                                it,
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
                     )
-                }
-            ) {
+                },
+                modifier =
+                    Modifier.fillMaxWidth()
 
+            ) {
                 Text(
                     "END VOTING"
                 )

@@ -13,11 +13,18 @@ class VotingRoomViewModel: ViewModel() {
     var room by mutableStateOf<Room?>(null)
         private set
 
+    var selectedOption by mutableStateOf(-1)
+        private set
+
     fun observeRoom(roomId: String){
         repository.observeRoom(
             roomId
         ){
             room = it
+            val uid = FirebaseManager.currentUid()
+            if(uid != null && it?.votes?.containsKey(uid) == true){
+                selectedOption = it.votes[uid] ?: -1
+            }
         }
     }
 
@@ -38,12 +45,42 @@ class VotingRoomViewModel: ViewModel() {
             roomId,
             uid,
             optionIndex,
-            onSuccess,
-            onError
+            onSuccess = {
+                selectedOption = optionIndex
+                onSuccess
+            },
+            onError = onError
         )
     }
 
-    fun finishVoting(roomId: String){
+    fun endVoting(
+        roomId: String,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        val currentRoom =
+            room
+        if (currentRoom == null) {
+            onError("Room tidak ditemukan")
+            return
+        }
+
+        val totalParticipant =
+            currentRoom.participants.size
+
+        val totalVote =
+            currentRoom.votes.size
+
+        if (
+            totalVote <
+            totalParticipant
+        ) {
+            onError(
+                "Ada peserta yang belum melakukan voting"
+            )
+            return
+        }
         repository.endVoting(roomId)
+        onSuccess()
     }
 }
