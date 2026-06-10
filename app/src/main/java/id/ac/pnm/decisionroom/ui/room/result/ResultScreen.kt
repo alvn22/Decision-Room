@@ -95,9 +95,9 @@ fun ResultScreen(
         ) {
             Column(
                 modifier =
-                    Modifier.padding(20.dp),
+                    Modifier.fillMaxWidth().padding(vertical = 12.dp),
                 horizontalAlignment =
-                    Alignment.CenterHorizontally
+                    Alignment.CenterHorizontally,
             ) {
                 Icon(
                     Icons.Default.EmojiEvents,
@@ -145,6 +145,7 @@ fun ResultScreen(
                     Text(
                         room.options[winnerIndex].text,
                         color = BackgroundLight,
+                        fontWeight = FontWeight.Bold,
                         style =
                             MaterialTheme
                                 .typography
@@ -159,7 +160,8 @@ fun ResultScreen(
         )
 
         Text(
-            "Total Votes : $totalVotes"
+            "Total Votes : $totalVotes",
+            Modifier.fillMaxWidth(),
         )
 
         Spacer(
